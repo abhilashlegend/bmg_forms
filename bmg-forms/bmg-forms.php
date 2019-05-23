@@ -1537,8 +1537,30 @@ function bmg_forms_plugin_create_db() {
 	$sql = "CREATE TABLE IF NOT EXISTS $table_name1 (
 		id mediumint(9) NOT NULL AUTO_INCREMENT,
 		form_id mediumint(9) NOT NULL,
+		type varchar(30) NOT NULL,
+		required boolean DEFAULT 0,
+		label text,
+		description text,
+		placeholder varchar(100),
+		classname varchar(100),
+		name varchar(30),
+		access boolean DEFAULT 0,
+		value text,
+		subtype varchar(30),
+		maxlength integer,
+		sub_values BLOB,
+		requirevalidoption boolean DEFAULT 0,
+		style varchar(30),
+		other boolean DEFAULT 0,
+		multiple boolean DEFAULT 0,
+		min integer,
+		max integer,
+		step integer,
+		rows integer,
+		toogle boolean DEFAULT 0,
+		inline boolean DEFAULT 0,
 		PRIMARY KEY  (id),
-		FOREIGN KEY  (maincategoryid) REFERENCES  $table_name(id)
+		FOREIGN KEY  (form_id) REFERENCES  $table_name(id)
 	) $charset_collate;";
 	$wpdb->query($sql);
 
@@ -1563,10 +1585,9 @@ function bmg_forms_remove_plugin_tables() {
 	global $wpdb;
 	try {
 				$charset_collate = $wpdb->get_charset_collate();
-				$table_name = $wpdb->prefix . 'bmg_contact_us';
-				$table_name2 = $wpdb->prefix . 'bmg_volunteer';
-				$table_name3 = $wpdb->prefix . 'bmg_feedback';
-				$table_name4 = $wpdb->prefix . 'bmg_service_inquiry';
+				$table_name = $wpdb->prefix . 'bmg_forms';
+				$table_name1 = $wpdb->prefix . 'bmg_forms_meta';
+				
 
 				$sql = "SET FOREIGN_KEY_CHECKS=0;";
 				$wpdb->query($sql);
@@ -1574,7 +1595,7 @@ function bmg_forms_remove_plugin_tables() {
 				$sql = "SET FOREIGN_KEY_CHECKS=0;";
 				$wpdb->query($sql);
 			
-				$sql = "DROP TABLE IF EXISTS  $table_name, $table_name2, $table_name3, $table_name4;";
+				$sql = "DROP TABLE IF EXISTS  $table_name, $table_name1;";
 				$tables_removed = $wpdb->query($sql);
 		}
 		catch (Exception $e) {
@@ -1588,10 +1609,30 @@ function bmg_forms_remove_plugin_tables() {
 
 function bmg_generate_form() {
 	$result = false;
+	global $wpdb;
+	$table_name = $wpdb->prefix . 'bmg_forms';
 	$form_name = $_POST['formname'];
 	$form_data = json_decode(stripcslashes($_POST['formdata']));
-	 print_r($form_data);
+	if(isset($form_name) && isset($form_data)) {
+		/*$wpdb->insert( 
+			$table_name, 
+			array( 
+				'form_name' => $form_name
+			),
+			array('%s') 
+		);*/
+
+
+
+	}
+	$fields = count($form_data);
+	for($i = 0; $i < $fields; $i++){
+		foreach ($form_data[$i] as $key => $value) {
+			echo $key . " " . $value;
+		}
+	}
 	 wp_die();
+
 }
 
 function bmg_forms_remove_options() {
