@@ -1,0 +1,26 @@
+ .bmg-input-error {
+ 	font-size: 1em;
+    font-weight: normal;
+    display: block;
+    line-height: 1.42857;
+    color: #fff !important;
+    background-color: #b10018;
+    border-color: #b10018;
+    margin: 20px 0;
+    padding: 5px 10px;
+ }
+ .bmg-input-error a, .bmg-input-error h3 {
+ 	color: #fff !important;
+ }
+ .bmg-list-errors { list-style: none; padding-left: 0; }
+.bmg-forms-mail-error{
+	 border: 2px solid #ff0000;
+}
+.bmg-success-box {
+	 background-color:#155724;
+	 display: block;
+	 line-height: 1.42857;
+	 color: #fff;
+	 margin: 20px 0;
+	 padding: 5px 10px;
+}

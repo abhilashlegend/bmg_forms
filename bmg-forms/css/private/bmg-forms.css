@@ -1,0 +1,23 @@
+/* General styles */
+.text-center { text-align: center; }
+
+
+/* Pagination styles */
+.bmg-pagination {
+    display: inline-block; float:right !important;
+}
+
+.bmg-pagination a, .bmg-pagination .prev, .bmg-pagination span {
+    color: black;
+    float: left;
+    padding: 6px 14px;
+    text-decoration: none;
+    transition: background-color .3s;
+}
+
+.bmg-pagination span.current {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.bmg-pagination a:hover:not(.current) {background-color: #ddd;}
