@@ -21,3 +21,11 @@
 }
 
 .bmg-pagination a:hover:not(.current) {background-color: #ddd;}
+
+.hidden-field {
+    display: block;
+}
+
+.form-builder label {
+	display: inline-block;
+}

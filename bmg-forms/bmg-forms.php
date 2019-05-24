@@ -562,7 +562,7 @@ function bmg_generate_form() {
 						}		 	
 					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,required,label,description,placeholder,classname,name,access,maxlength,value, subtype) VALUES (%d,%s,%d,%s,%s,%s,%s,%s,%d,%d,%s,%s)",$form_id, $field_type, $required, $label, $description, $placeholder, $class, $name, $access, $maxlength, $default_value, $subtype);
     				$wpdb->query($sql);	
-					echo $sql;
+					
 				}
 
 
@@ -618,7 +618,7 @@ function bmg_generate_form() {
 						}		 	
 					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,required,label,description,placeholder,classname,name,access,maxlength,value, subtype, rows) VALUES (%d,%s,%d,%s,%s,%s,%s,%s,%d,%d,%s,%s,%d)",$form_id, $field_type, $required, $label, $description, $placeholder, $class, $name, $access, $maxlength, $default_value, $subtype, $rows);
     				$wpdb->query($sql);	
-					echo $sql;
+					
 				}
 
 
@@ -674,7 +674,7 @@ function bmg_generate_form() {
 						}		 	
 					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,required,label,description,placeholder,classname,name,access,value,min,max,step) VALUES (%d,%s,%d,%s,%s,%s,%s,%s,%d,%s,%d,%d,%d)",$form_id, $field_type, $required, $label, $description, $placeholder, $class, $name, $access, $default_value, $min, $max, $step);
     				$wpdb->query($sql);	
-					echo $sql;
+				
 				}
 
 
@@ -722,7 +722,7 @@ function bmg_generate_form() {
 						}		 	
 					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,required,label,description,placeholder,classname,name,access,multiple,sub_values) VALUES (%d,%s,%d,%s,%s,%s,%s,%s,%d,%d,%s)",$form_id, $field_type, $required, $label, $description, $placeholder, $class, $name, $access, $multiple, $options);
     				$wpdb->query($sql);	
-					echo $sql;
+					
 				}
 
 
@@ -770,7 +770,7 @@ function bmg_generate_form() {
 						}		 	
 					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,required,label,description,inline,classname,name,access,other,sub_values) VALUES (%d,%s,%d,%s,%s,%d,%s,%s,%d,%d,%s)",$form_id, $field_type, $required, $label, $description, $inline, $class, $name, $access, $other, $options);
     				$wpdb->query($sql);	
-					echo $sql;
+					
 				}
 
 
@@ -823,8 +823,231 @@ function bmg_generate_form() {
 						}		 	
 					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,required,label,description,toggle,inline,classname,name,access,other,sub_values) VALUES (%d,%s,%d,%s,%s,%d,%d,%s,%s,%d,%d,%s)",$form_id, $field_type, $required, $label, $description, $toggle, $inline, $class, $name, $access, $other, $options);
     				$wpdb->query($sql);	
-					echo $sql;
+					
 				}
+
+
+				/* Hidden Input */	
+				if($value === "hidden" && $field_name === "type") {
+					$field_type = "hidden";
+					$name = "";
+					$default_value = "";
+					$access = false;
+						foreach ($form_data[$i] as $field_name => $value) {
+							
+							if($field_name == "name"){
+								$name = $value;
+							}
+							if($field_name == "value"){
+								$default_value = $value;
+							}
+							if($field_name == "access"){
+								$access = $value;
+							}
+						}		 	
+					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,name,access,value) VALUES (%d,%s,%s,%d,%s)",$form_id, $field_type, $name, $access, $default_value);
+    				$wpdb->query($sql);	
+				
+				}
+
+
+
+				/* Date Field */	
+				if($value === "date" && $field_name == "type") {
+					$field_type = "date";
+					$required = false;
+					$label = "";
+					$description = "";
+					$placeholder = "";
+					$class = "";
+					$name = "";
+					$access = false;
+					$default_value = "";
+						foreach ($form_data[$i] as $field_name => $value) {
+							
+							if($field_name == "required"){
+								$required = $value;
+							}
+							if($field_name == "label") {
+								$label = $value;
+							}
+							if($field_name == "description"){
+								$description = $value;
+							}
+							if($field_name == "placeholder"){
+								$placeholder = $value;
+							}
+							if($field_name == "className"){
+								$class = $value;
+							}
+							if($field_name == "name"){
+								$name = $value;
+							}
+							if($field_name == "access"){
+								$access = $value;
+							}
+							if($field_name == "value"){
+								$default_value = $value;
+							}
+						}		 	
+					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,required,label,description,placeholder,classname,name,access,value) VALUES (%d,%s,%d,%s,%s,%s,%s,%s,%d,%s)",$form_id, $field_type, $required, $label, $description, $placeholder, $class, $name, $access, $default_value);
+    				$wpdb->query($sql);	
+					
+				}
+
+
+
+				/* File Upload */	
+				if($value === "file" && $field_name == "type") {
+					$field_type = "file";
+					$required = false;
+					$label = "";
+					$description = "";
+					$placeholder = "";
+					$class = "";
+					$name = "";
+					$access = false;
+					$subtype = "";
+					$multiple = false;
+						foreach ($form_data[$i] as $field_name => $value) {
+							
+							if($field_name == "required"){
+								$required = $value;
+							}
+							if($field_name == "label") {
+								$label = $value;
+							}
+							if($field_name == "description"){
+								$description = $value;
+							}
+							if($field_name == "placeholder"){
+								$placeholder = $value;
+							}
+							if($field_name == "className"){
+								$class = $value;
+							}
+							if($field_name == "name"){
+								$name = $value;
+							}
+							if($field_name == "access"){
+								$access = $value;
+							}
+							if($field_name == "subtype"){
+								$subtype = $value;
+							}
+							if($multiple == "multiple"){
+								$multiple = $value;
+							}
+						}		 	
+					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,required,label,description,placeholder,classname,name,access,subtype,multiple) VALUES (%d,%s,%d,%s,%s,%s,%s,%s,%d,%s,%d)",$form_id, $field_type, $required, $label, $description, $placeholder, $class, $name, $access, $subtype, $multiple);
+    				$wpdb->query($sql);	
+				
+				}
+
+
+
+				/* Autocomple select input */	
+				if($value === "autocomplete" && $field_name == "type") {
+					$field_type = "autocomplete";
+					$required = false;
+					$label = "";
+					$description = "";
+					$placeholder = "";
+					$class = "";
+					$name = "";
+					$access = false;
+					$requirevalidoption = false;
+					$options = [];
+						foreach ($form_data[$i] as $field_name => $value) {
+							
+							if($field_name == "required"){
+								$required = $value;
+							}
+							if($field_name == "label") {
+								$label = $value;
+							}
+							if($field_name == "description"){
+								$description = $value;
+							}
+							if($field_name == "placeholder"){
+								$placeholder = $value;
+							}
+							if($field_name == "className"){
+								$class = $value;
+							}
+							if($field_name == "name"){
+								$name = $value;
+							}
+							if($field_name == "access"){
+								$access = $value;
+							}
+							if($field_name == "requireValidOption"){
+								$requirevalidoption = $value;
+							}
+							if($field_name == "values") {
+								$options = serialize($value);	
+							}
+						}		 	
+					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,required,label,description,placeholder,classname,name,access,requirevalidoption,sub_values) VALUES (%d,%s,%d,%s,%s,%s,%s,%s,%d,%d,%s)",$form_id, $field_type, $required, $label, $description, $placeholder, $class, $name, $access, $requirevalidoption, $options);
+    				$wpdb->query($sql);	
+					
+				}
+
+
+
+				/* Header Tag Input */	
+				if($value === "header" && $field_name === "type") {
+					$field_type = "header";
+					$subtype = "";
+					$label = "";
+					$class = "";
+					$access = false;
+						foreach ($form_data[$i] as $field_name => $value) {
+							if($field_name == "subtype"){
+								$subtype = $value;
+							}
+							if($field_name == "label"){
+								$label = $value;
+							}
+							if($field_name == "className"){
+								$class = $value;
+							}
+							if($field_name == "access"){
+								$access = $value;
+							}
+						}		 	
+					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,subtype,label,classname,access) VALUES (%d,%s,%s,%s,%s,%d)",$form_id, $field_type, $subtype, $label, $class, $access);
+    				$wpdb->query($sql);	
+					
+				}
+
+
+				/* Paragraph Tag Input */	
+				if($value === "paragraph" && $field_name === "type") {
+					$field_type = "paragraph";
+					$subtype = "";
+					$label = "";
+					$class = "";
+					$access = false;
+						foreach ($form_data[$i] as $field_name => $value) {
+							if($field_name == "subtype"){
+								$subtype = $value;
+							}
+							if($field_name == "label"){
+								$label = $value;
+							}
+							if($field_name == "className"){
+								$class = $value;
+							}
+							if($field_name == "access"){
+								$access = $value;
+							}
+						}		 	
+					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,subtype,label,classname,access) VALUES (%d,%s,%s,%s,%s,%d)",$form_id, $field_type, $subtype, $label, $class, $access);
+    				$wpdb->query($sql);	
+					
+				}
+
 
 
 				/* Button */	
@@ -862,10 +1085,10 @@ function bmg_generate_form() {
 						}		 	
 					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,label,classname,name,access,style,value,subtype) VALUES (%d,%s,%s,%s,%s,%d,%s,%s,%s)",$form_id, $field_type, $label, $class, $name, $access, $style, $default_value, $subtype);
     				$wpdb->query($sql);	
-					echo $sql;
+					
 				}
 
-
+				echo "form successfully created";				
 
 
 			}
