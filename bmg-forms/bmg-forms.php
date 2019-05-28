@@ -104,10 +104,157 @@ function onMailError( $wp_error ) {
 //hint: register shortcode
 function bmg_forms_register_shortcodes() {
 	add_shortcode('bmg_contact_us_form','bmg_contact_us_form_shortcode');
+	add_shortcode('bmg_forms','bmg_forms_shortcode');
 }
 
 // 2.1 
 // hint: contact us shortcode
+
+function bmg_forms_shortcode($args, $content="") {
+	global $wpdb;
+	$form_id = $args['id'];
+	$output = '';
+
+	$form_meta_table = $wpdb->prefix . 'bmg_forms_meta';
+
+	if(isset($form_id)) {
+		$result = $wpdb->get_results("SELECT * FROM $form_meta_table WHERE form_id=$form_id ORDER BY id ASC");
+
+		$form_items = count($result);
+
+		if($form_items == 0) {
+			$output = "<div> No form to display</div>";
+		}
+
+		$output .= '<div role="form">
+					<form method="post" action="" novalidate>';
+
+		for($i = 0; $i < $form_items; $i++){
+
+			// Text Field 
+			if($result[$i]->type == "text") {
+				if($result[$i]->required) {
+					$field_required = 'true';
+					$rspan = '<span>*</span>';
+				} else {
+					$field_required = 'false';
+					$rspan = '';
+				}
+				if($result[$i]->maxlength > 0) {
+					$field_max_length = $maxlength;
+				} else {
+					$field_max_length = '';
+				}
+				$output .= '<div class="form-group">';
+				$output .=	'<label for="' . $result[$i]->name . '">'. $rspan . ' ' . $result[$i]->label . '</label>';
+				$output .=	'<input type="' . $result[$i]->subtype . '" name="' . $result[$i]->name . '" id="' . $result[$i]->name . '" aria-required="' . $field_required . '" aria-invalid="" aria-describedby="' . $result[$i]->name . '-error" placeholder="' . $result[$i]->placeholder . '" value="' . $result[$i]->value . '" class="' . $result[$i]->classname . '" maxlength="' . $field_max_length . '" />';
+				$output .= '<small id="' . $result[$i]->name . '-help" class="form-text text-muted">' .  $result[$i]->description . '</small>';
+				$output .= '</div>';
+			}
+
+			// Textarea
+			if($result[$i]->type == "textarea") {
+				if($result[$i]->required) {
+					$field_required = 'true';
+					$rspan = '<span>*</span>';
+				} else {
+					$field_required = 'false';
+					$rspan = '';
+				}
+				$output .= '<div class="form-group">';
+				$output .=	'<label for="' . $result[$i]->name . '">'. $rspan . ' ' . $result[$i]->label . '</label>';
+				$output .= '<textarea name="' . $result[$i]->name . '" cols="40" rows="' . $result[$i]->rows . '" class="' . $result[$i]->classname . '" id="' . $result[$i]->name . '" aria-required="' . $field_required . '" aria-invalid="" aria-describedby="' . $result[$i]->name . '-error" placeholder="' . $result[$i]->placeholder . '">' . $result[$i]->value . '</textarea>';
+				$output .= '<small id="' . $result[$i]->name . '-help" class="form-text text-muted">' .  $result[$i]->description . '</small>';
+				$output .= '</div>';	
+			}
+
+
+			// Select field
+			if($result[$i]->type == "select") {
+				if($result[$i]->required) {
+					$field_required = 'true';
+					$rspan = '<span>*</span>';
+				} else {
+					$field_required = 'false';
+					$rspan = '';
+				}
+				$option_values = unserialize($result[$i]->sub_values);
+				$option_items = count($option_values);
+				$output .= '<div class="form-group">';
+				$output .=	'<label for="' . $result[$i]->name . '">'. $rspan . ' ' . $result[$i]->label . '</label>';
+				$output .= '<select name="' . $result[$i]->name . '" id="' . $result[$i]->name . '" aria-required="' . $field_required . '" aria-invalid="false" class="' . $result[$i]->classname . '">';
+					for($j = 0; $j < $option_items; $j++) {
+						if($option_values[$j]->selected == 1){
+							$option_selected =  'selected="true"'; 
+						} else {
+							$option_selected =  ''; 
+						}
+						
+						$output .= '<option value="' . $option_values[$j]->value . '" ' . $option_selected . '>' . $option_values[$j]->label . '</option>';
+					}
+				$output .= '</select>';
+				$output .= '<small id="' . $result[$i]->name . '-help" class="form-text text-muted">' .  $result[$i]->description . '</small>';
+				$output .= '</div>';	
+			}	
+
+
+			// Radio Group
+			if($result[$i]->type == "radio-group") {
+				if($result[$i]->required) {
+					$field_required = 'true';
+					$rspan = '<span>*</span>';
+				} else {
+					$field_required = 'false';
+					$rspan = '';
+				}
+				if($result[$i]->inline) {
+					$form_inline = 'form-check-inline';
+				}
+				else {
+					$form_inline = '';
+				}
+				$option_values = unserialize($result[$i]->sub_values);
+				$option_items = count($option_values);
+				$output .= '<div class="form-group">';
+				$output .=	'<label for="' . $result[$i]->name . '">'. $rspan . ' ' . $result[$i]->label . '</label>';
+				$output .= '<small id="' . $result[$i]->name . '-help" class="form-text text-muted">' .  $result[$i]->description . '</small>';
+				for($j = 0; $j < $option_items; $j++) {
+						if($option_values[$j]->selected == 1){
+							$option_selected =  'checked'; 
+						} else {
+							$option_selected =  ''; 
+						}
+						$output .= '<div class="form-check ' . $form_inline . '">';
+						$output .= '<input class="form-check-input ' . $result[$i]->classname . '" type="radio" name="' . $result[$i]->name . '" id="' . $result[$i]->name . $j . '" value="' . $option_values[$j]->value . '" ' . $option_selected . '>';
+  						$output .= '<label class="form-check-label" for="' . $result[$i]->name . $j . '">';
+    					$output .= $option_values[$j]->label;
+  						$output .= '</label>';
+				}
+				
+				$output .= '</div>';	
+			}	
+
+
+
+			// Button
+			if($result[$i]->type == "button") {
+				$output .= '<div class="form-group">';
+				$output .= '<input type="' . $result[$i]->subtype . '" name="' . $result[$i]->name . '" value="' . $result[$i]->label . '" class="' . $result[$i]->classname . '">';	
+				$output .= '</div>';	
+			}
+
+		}
+
+
+		$output .= '</form>
+					</div>';	
+	} else {
+		$output = "<div> Invalid shortcode </div>";
+	}
+
+	
+	return $output;			
+}
 
 function bmg_contact_us_form_shortcode($args, $content="") {
 	global $wpdb;

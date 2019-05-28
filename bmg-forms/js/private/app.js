@@ -24,7 +24,9 @@ jQuery($ => {
 				xhttp.onreadystatechange = function() {
 					if (this.readyState == 4 && this.status == 200) {
               alert("Form created successfully");
+
 						console.log(this.responseText);
+            window.location.replace("admin.php?page=bmg-forms");
 					} 
 		  		};
 			xhttp.open("POST", "admin-ajax.php?action=bmg_generate_form",true);
