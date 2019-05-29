@@ -21,9 +21,8 @@ Text Domain: bmg-forms
 
 	2. ShortCodes
 		2.0 - register shortcode
-		2.1 - contact us shortcode 
-		2.2 - volunteer form shortcode
-		2.3 - feedback form shortcode
+		2.1 - bmg forms shortcode 
+	
 
 	3. Filters
 		3.1 - admin menus
@@ -114,8 +113,16 @@ function bmg_forms_shortcode($args, $content="") {
 	global $wpdb;
 	$form_id = $args['id'];
 	$output = '';
-
+	$error_message = [];
+	$aria_state = [];
+	$form_fields = [];
+	$success = false;
 	$form_meta_table = $wpdb->prefix . 'bmg_forms_meta';
+	$captcha = create_captcha();
+
+	if(isset($_POST) && empty($_SESSION['form_submit'])) {
+	
+	}
 
 	if(isset($form_id)) {
 		$result = $wpdb->get_results("SELECT * FROM $form_meta_table WHERE form_id=$form_id ORDER BY id ASC");
@@ -127,27 +134,85 @@ function bmg_forms_shortcode($args, $content="") {
 		}
 
 		$output .= '<div role="form">
-					<form method="post" action="" novalidate>';
+					<form method="post" action="" enctype="multipart/form-data"  novalidate>';
 
 		for($i = 0; $i < $form_items; $i++){
+
+			// Header tags
+			if($result[$i]->type == "header") {
+				$output .= '<'. $result[$i]->subtype . ' class="' . $result[$i]->classname . '">' . $result[$i]->label . '</' . $result[$i]->subtype . '>';
+			}
+
+			// paragraph
+			if($result[$i]->type == "paragraph") {
+				$output .= '<'. $result[$i]->subtype . ' class="' . $result[$i]->classname . '">' . $result[$i]->label . '</' . $result[$i]->subtype . '>';
+			}
 
 			// Text Field 
 			if($result[$i]->type == "text") {
 				if($result[$i]->required) {
 					$field_required = 'true';
-					$rspan = '<span>*</span>';
+					$rspan = '<span aria-label="required">*</span>';
+					if(empty(trim(esc_attr($_POST[$result[$i]->name])))){
+						$error_message[$result[$i]->name] = "Please enter " . $result[$i]->label;
+					}
 				} else {
 					$field_required = 'false';
 					$rspan = '';
 				}
+				if($result[$i]->subtype == "email" && isset($_POST[$result[$i]->name])){
+					if (!filter_var($_POST[$result[$i]->name], FILTER_VALIDATE_EMAIL) && !empty($_POST[$result[$i]->name])) {
+						$error_message[$result[$i]->name] = 'Please enter a valid email address';
+					}	
+				}
+				$form_fields[] = $result[$i]->name;
 				if($result[$i]->maxlength > 0) {
 					$field_max_length = $maxlength;
 				} else {
 					$field_max_length = '';
 				}
+				if(isset($_POST[$result[$i]->name])){
+					$field_value = $_POST[$result[$i]->name];
+				} else {
+					$field_value = $result[$i]->value;
+				}
 				$output .= '<div class="form-group">';
 				$output .=	'<label for="' . $result[$i]->name . '">'. $rspan . ' ' . $result[$i]->label . '</label>';
-				$output .=	'<input type="' . $result[$i]->subtype . '" name="' . $result[$i]->name . '" id="' . $result[$i]->name . '" aria-required="' . $field_required . '" aria-invalid="" aria-describedby="' . $result[$i]->name . '-error" placeholder="' . $result[$i]->placeholder . '" value="' . $result[$i]->value . '" class="' . $result[$i]->classname . '" maxlength="' . $field_max_length . '" />';
+				$output .=	'<input type="' . $result[$i]->subtype . '" name="' . $result[$i]->name . '" id="' . $result[$i]->name . '" aria-required="' . $field_required . '" aria-invalid="" aria-describedby="' . $result[$i]->name . '-error" placeholder="' . $result[$i]->placeholder . '" value="' . $field_value . '" class="' . $result[$i]->classname . '" maxlength="' . $field_max_length . '" />';
+				$output .= '<small id="' . $result[$i]->name . '-help" class="form-text text-muted">' .  $result[$i]->description . '</small>';
+				$output .= '</div>';
+			}
+
+
+			// Number input
+			if($result[$i]->type == "number") {
+				if($result[$i]->required) {
+					$field_required = 'true';
+					$rspan = '<span aria-label="required">*</span>';
+					if(empty(trim(esc_attr($_POST[$result[$i]->name])))){
+						$error_message[$result[$i]->name] = "Please enter " . $result[$i]->label;
+					}
+				} else {
+					$field_required = 'false';
+					$rspan = '';
+				}
+				
+				
+				if($result[$i]->maxlength > 0) {
+					$field_max_length = $maxlength;
+				} else {
+					$field_max_length = '';
+				}
+				if(isset($_POST[$result[$i]->name])){
+					$field_value = $_POST[$result[$i]->name];
+				} else {
+					$field_value = $result[$i]->value;
+				}
+				$form_fields[] = $result[$i]->name;
+
+				$output .= '<div class="form-group">';
+				$output .=	'<label for="' . $result[$i]->name . '">'. $rspan . ' ' . $result[$i]->label . '</label>';
+				$output .=	'<input type="number" name="' . $result[$i]->name . '" id="' . $result[$i]->name . '" aria-required="' . $field_required . '" aria-invalid="" aria-describedby="' . $result[$i]->name . '-error" placeholder="' . $result[$i]->placeholder . '" value="' . $field_value . '" class="' . $result[$i]->classname . '" maxlength="' . $field_max_length . '" min="' . $result[$i]->min . '" max="' . $result[$i]->max . '" step="' . $result[$i]->step . '" />';
 				$output .= '<small id="' . $result[$i]->name . '-help" class="form-text text-muted">' .  $result[$i]->description . '</small>';
 				$output .= '</div>';
 			}
@@ -156,14 +221,23 @@ function bmg_forms_shortcode($args, $content="") {
 			if($result[$i]->type == "textarea") {
 				if($result[$i]->required) {
 					$field_required = 'true';
-					$rspan = '<span>*</span>';
+					$rspan = '<span aria-label="required">*</span>';
+					if(empty(trim(esc_attr($_POST[$result[$i]->name])))){
+						$error_message[$result[$i]->name] = "Please enter " . $result[$i]->label;
+					}
 				} else {
 					$field_required = 'false';
 					$rspan = '';
 				}
+				if(isset($_POST[$result[$i]->name])){
+					$field_value = $_POST[$result[$i]->name];
+				} else {
+					$field_value = $result[$i]->value;
+				}
+				$form_fields[] = $result[$i]->name;
 				$output .= '<div class="form-group">';
 				$output .=	'<label for="' . $result[$i]->name . '">'. $rspan . ' ' . $result[$i]->label . '</label>';
-				$output .= '<textarea name="' . $result[$i]->name . '" cols="40" rows="' . $result[$i]->rows . '" class="' . $result[$i]->classname . '" id="' . $result[$i]->name . '" aria-required="' . $field_required . '" aria-invalid="" aria-describedby="' . $result[$i]->name . '-error" placeholder="' . $result[$i]->placeholder . '">' . $result[$i]->value . '</textarea>';
+				$output .= '<textarea name="' . $result[$i]->name . '" cols="40" rows="' . $result[$i]->rows . '" class="' . $result[$i]->classname . '" id="' . $result[$i]->name . '" aria-required="' . $field_required . '" aria-invalid="" aria-describedby="' . $result[$i]->name . '-error" placeholder="' . $result[$i]->placeholder . '">' . $field_value . '</textarea>';
 				$output .= '<small id="' . $result[$i]->name . '-help" class="form-text text-muted">' .  $result[$i]->description . '</small>';
 				$output .= '</div>';	
 			}
@@ -173,18 +247,26 @@ function bmg_forms_shortcode($args, $content="") {
 			if($result[$i]->type == "select") {
 				if($result[$i]->required) {
 					$field_required = 'true';
-					$rspan = '<span>*</span>';
+					$rspan = '<span aria-label="required">*</span>';
+					if(empty(trim(esc_attr($_POST[$result[$i]->name])))){
+						$error_message[$result[$i]->name] = "Please enter " . $result[$i]->label;
+					}
 				} else {
 					$field_required = 'false';
 					$rspan = '';
 				}
+
+				$form_fields[] = $result[$i]->name;
 				$option_values = unserialize($result[$i]->sub_values);
 				$option_items = count($option_values);
 				$output .= '<div class="form-group">';
 				$output .=	'<label for="' . $result[$i]->name . '">'. $rspan . ' ' . $result[$i]->label . '</label>';
 				$output .= '<select name="' . $result[$i]->name . '" id="' . $result[$i]->name . '" aria-required="' . $field_required . '" aria-invalid="false" class="' . $result[$i]->classname . '">';
 					for($j = 0; $j < $option_items; $j++) {
-						if($option_values[$j]->selected == 1){
+						if(isset($_POST[$result[$i]->name]) && $_POST[$result[$i]->name] == $option_values[$j]->value){
+							$option_selected =  'selected="true"'; 
+						} 
+						else if($option_values[$j]->selected == 1){
 							$option_selected =  'selected="true"'; 
 						} else {
 							$option_selected =  ''; 
@@ -202,7 +284,10 @@ function bmg_forms_shortcode($args, $content="") {
 			if($result[$i]->type == "radio-group") {
 				if($result[$i]->required) {
 					$field_required = 'true';
-					$rspan = '<span>*</span>';
+					$rspan = '<span aria-label="required">*</span>';
+					if(empty(trim(esc_attr($_POST[$result[$i]->name])))){
+						$error_message[$result[$i]->name] = "Please enter " . $result[$i]->label;
+					}
 				} else {
 					$field_required = 'false';
 					$rspan = '';
@@ -213,6 +298,7 @@ function bmg_forms_shortcode($args, $content="") {
 				else {
 					$form_inline = '';
 				}
+				$form_fields[] = $result[$i]->name;
 				$option_values = unserialize($result[$i]->sub_values);
 				$option_items = count($option_values);
 				$output .= '<div class="form-group">';
@@ -229,28 +315,169 @@ function bmg_forms_shortcode($args, $content="") {
   						$output .= '<label class="form-check-label" for="' . $result[$i]->name . $j . '">';
     					$output .= $option_values[$j]->label;
   						$output .= '</label>';
+  						$output .= '</div>';	
 				}
 				
 				$output .= '</div>';	
 			}	
 
 
+			// Checkbox Group
+			if($result[$i]->type == "checkbox-group") {
+				if($result[$i]->required) {
+					$field_required = 'true';
+					$rspan = '<span aria-label="required">*</span>';
+					if(empty(trim(esc_attr($_POST[$result[$i]->name])))){
+						$error_message[$result[$i]->name] = "Please enter " . $result[$i]->label;
+					}
+				} else {
+					$field_required = 'false';
+					$rspan = '';
+				}
+				if($result[$i]->inline) {
+					$form_inline = 'form-check-inline';
+				}
+				else {
+					$form_inline = '';
+				}
+				$form_fields[] = $result[$i]->name;
+				$option_values = unserialize($result[$i]->sub_values);
+				$option_items = count($option_values);
+				$output .= '<div class="form-group">';
+				$output .=	'<label for="' . $result[$i]->name . '">'. $rspan . ' ' . $result[$i]->label . '</label>';
+				$output .= '<small id="' . $result[$i]->name . '-help" class="form-text text-muted">' .  $result[$i]->description . '</small>';
+				for($j = 0; $j < $option_items; $j++) {
+						if($option_values[$j]->selected == 1){
+							$option_selected =  'checked'; 
+						} else {
+							$option_selected =  ''; 
+						}
+						$output .= '<div class="form-check ' . $form_inline . '">';
+						$output .= '<input class="form-check-input ' . $result[$i]->classname . '" type="checkbox" name="' . $result[$i]->name . '" id="' . $result[$i]->name . $j . '" value="' . $option_values[$j]->value . '" ' . $option_selected . '>';
+  						$output .= '<label class="form-check-label" for="' . $result[$i]->name . $j . '">';
+    					$output .= $option_values[$j]->label;
+  						$output .= '</label>';
+  						$output .= '</div>';			
+				}
+				
+				$output .= '</div>';	
+			}	
+
+			// Date Field
+			if($result[$i]->type == "date") {
+				if($result[$i]->required) {
+					$field_required = 'true';
+					$rspan = '<span aria-label="required">*</span>';
+					if(empty(trim(esc_attr($_POST[$result[$i]->name])))){
+						$error_message[$result[$i]->name] = "Please enter " . $result[$i]->label;
+					}
+				} else {
+					$field_required = 'false';
+					$rspan = '';
+				}
+				if(isset($_POST[$result[$i]->name])){
+					$field_value = $_POST[$result[$i]->name];
+				} else {
+					$field_value = $result[$i]->value;
+				}
+				$form_fields[] = $result[$i]->name;
+				$output .= '<div class="form-group">';
+				$output .=	'<label for="' . $result[$i]->name . '">'. $rspan . ' ' . $result[$i]->label . '</label>';
+				$output .=	'<input type="date" name="' . $result[$i]->name . '" id="' . $result[$i]->name . '" aria-required="' . $field_required . '" aria-invalid="" aria-describedby="' . $result[$i]->name . '-error" placeholder="' . $result[$i]->placeholder . '" value="' . $field_value . '" class="' . $result[$i]->classname . '" maxlength="' . $field_max_length . '" />';
+				$output .= '<small id="' . $result[$i]->name . '-help" class="form-text text-muted">' .  $result[$i]->description . '</small>';	
+
+				$output .= '</div>';
+			}
+
+			// File Upload field
+			if($result[$i]->type == "file") {
+				if($result[$i]->required) {
+					$field_required = 'true';
+					$rspan = '<span aria-label="required">*</span>';
+					if(empty(trim(esc_attr($_POST[$result[$i]->name])))){
+						$error_message[$result[$i]->name] = "Please upload " . $result[$i]->label;
+					}
+				} else {
+					$field_required = 'false';
+					$rspan = '';
+				}
+				if($result[$i]->multiple) {
+					$field_multiple = 'multiple="true"';
+					$field_arr = '[]';
+				} else {
+					$field_multiple = '';
+					$field_arr = '';
+				}
+				$form_fields[] = $result[$i]->name;
+				$output .= '<div class="form-group">';
+				$output .=	'<label for="' . $result[$i]->name . '">'. $rspan . ' ' . $result[$i]->label . '</label>';
+				$output .= '<input placeholder="' . $result[$i]->placeholder . '" class="" name="' . $result[$i]->name . $field_arr . '" ' . $field_multiple . ' type="file" id="' . $result[$i]->name . '" title="' . $result[$i]->description . '">';
+				$output .= '<small id="' . $result[$i]->name . '-help" class="form-text text-muted">' .  $result[$i]->description . '</small>';	
+				$output .= '</div>';	
+			}
+
+
+			// Hidden Input
+			if($result[$i]->type == "hidden") {
+				$output .=	'<input type="hidden" name="' . $result[$i]->name . '" id="' . $result[$i]->name . '"  value="' . $result[$i]->value . '"  />';
+				$form_fields[] = $result[$i]->name;
+			}
+
 
 			// Button
 			if($result[$i]->type == "button") {
+				if($result[$i]->subtype == "submit"){
+					$output .= '<div class="form-group">';
+					$output .= '<label for="bmg_security"><span aria-label="required">*</span> Security Code</label>';
+					$output .= '<input type="text" class="form-control bmg-captcha-field" id="bmg_security" name="bmg_security" placeholder="Enter code" required aria-required="true" aria-describedby="bmg_security-error" />';
+					
+					$output .= $captcha['image'];
+					$output .= '<div class="clearfix"></div>';
+					$output .= '</div>';	
+					$output .= '<input type="hidden" name="bmg_code" id="bmg_code" value="';
+				$output .= $captcha['word']; 
+				$output .= '" />';
+				$form_fields[] = 'bmg_security';
+				if(empty(trim(esc_attr($_POST['bmg_security'])))){
+						$error_message['bmg_security'] = "Please enter security code";
+					}
+				}
+				$form_fields[] = $result[$i]->name;	
 				$output .= '<div class="form-group">';
 				$output .= '<input type="' . $result[$i]->subtype . '" name="' . $result[$i]->name . '" value="' . $result[$i]->label . '" class="' . $result[$i]->classname . '">';	
 				$output .= '</div>';	
 			}
 
+
+
+
 		}
 
 
 		$output .= '</form>
-					</div>';	
+					</div>';
+
+			// Display error messages		
+			if(count($error_message) && count($_POST)) {
+			
+			$error_output = '<div class="info-box warning bmg-input-error" role="alert">
+			<h3><strong>Error submitting form:</strong></h3>
+			<ul class="bmg-list-errors" title="The following errors have been reported">'; 
+			foreach($error_message as $key => $error) {
+				$error_output .= '<li><a href="#' . $key .'" id="' . $key . '-error">'  . $error . "</a></li>";
+			}
+			$error_output .= '</ul></div>';
+			echo $error_output;
+			} else {
+				$error_output = '';	
+				echo $error_output;
+			}		
+
 	} else {
 		$output = "<div> Invalid shortcode </div>";
 	}
+
+
 
 	
 	return $output;			
@@ -514,8 +741,11 @@ function bmg_contact_us_form_shortcode($args, $content="") {
 // hint: loads external files into PUBLIC website 
 	function bmg_forms_public_scripts() {	
 		wp_register_style('bmg-forms-css-public', plugins_url('css/public/bmg-forms.css', __FILE__));
-		wp_enqueue_style('bmg-forms-css-public');	
 
+		wp_register_script('bmg-forms-app-public', plugins_url('js/public/bmg-app.js', __FILE__), array('jquery'), false, true);
+
+		wp_enqueue_style('bmg-forms-css-public');	
+		wp_enqueue_script('bmg-forms-app-public');
 		
 
 	}
@@ -1325,7 +1555,7 @@ function bmg_get_options_settings() {
 	
 }
 
-// 6.20
+// 6.3
 // hint: returns the requested page option value or it's default
 function bmg_get_option( $option_name ) {
 	
@@ -1361,7 +1591,7 @@ function bmg_get_option( $option_name ) {
 	
 }
 
-// 6.19
+// 6.4
 // hint: returns default option values as an associative array
 function bmg_get_default_options() {
 	
@@ -1389,6 +1619,189 @@ function bmg_get_default_options() {
 	
 	
 }
+
+// 6.5
+//hint: create captcha
+function create_captcha($data = '', $img_path = '', $img_url = '', $font_path = '') {
+			
+		$defaults = array(
+		'word' 			=> 	'', 
+		'img_path' 		=>   plugin_dir_path( __FILE__ ) . 'captcha/', 
+		'img_url' 		=> 	plugins_url( 'captcha/', __FILE__ ),
+		'img_width' 	=> '150', 
+		'img_height' 	=> '45', 
+		'font_path' 	=> '',
+		'expiration' 	=> 7200
+		);		
+		
+		foreach ($defaults as $key => $val)	{
+				
+			if ( ! is_array($data)) {
+				if ( ! isset($$key) OR $$key == '') {
+					$$key = $val;
+				
+				}
+			}
+			else {			
+				$$key = ( ! isset($data[$key])) ? $val : $data[$key];			
+				
+			}
+		}	
+		
+		if ($defaults['img_path'] == '' OR $defaults['img_url'] == '') {
+			return FALSE;
+		}
+		if ( ! @is_dir($defaults['img_path'])) {
+			return FALSE;
+		}
+		
+		if ( ! is_writable($defaults['img_path'])) {
+			return FALSE;
+		}			
+	
+		if ( ! extension_loaded('gd')) {
+			return FALSE;
+		}		
+		
+		// -----------------------------------
+		// Remove old images	
+		// -----------------------------------
+				
+		list($usec, $sec) = explode(" ", microtime());
+		$now = ((float)$usec + (float)$sec);
+				
+		$current_dir = @opendir($defaults['img_path']);
+		
+		while($filename = @readdir($current_dir)) {
+			if ($filename != "." and $filename != ".." and $filename != "index.html") {
+				$name = str_replace(".jpg", "", $filename);	
+				if (((double)$name + $expiration) < $now) {
+					@unlink($img_path.$filename);
+				}
+			}
+		}		
+		@closedir($current_dir);
+	
+		// -----------------------------------
+		// Do we have a "word" yet?
+		// -----------------------------------
+		
+	   if ($word == '') {
+			$pool = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+			$str = '';
+			for ($i = 0; $i < 4; $i++) {
+				$str .= substr($pool, mt_rand(0, strlen($pool) -1), 1);
+			}		
+			$word = $str;
+	   }
+		
+		// -----------------------------------
+		// Determine angle and position	
+		// -----------------------------------
+		
+		$length	= strlen($word);
+		$angle	= ($length >= 6) ? rand(-($length-6), ($length-6)) : 0;
+		$x_axis	= rand(6, (360/$length)-16);			
+		$y_axis = ($angle >= 0 ) ? rand($img_height, $img_width) : rand(6, $img_height);
+		
+		// -----------------------------------
+		// Create image
+		// -----------------------------------
+				
+		// PHP.net recommends imagecreatetruecolor(), but it isn't always available
+		if (function_exists('imagecreatetruecolor')) {
+			$im = imagecreatetruecolor($img_width, $img_height);
+		}
+		else {
+			$im = imagecreate($img_width, $img_height);
+		}
+				
+		// -----------------------------------
+		//  Assign colors
+		// -----------------------------------
+		
+		$bg_color		= imagecolorallocate ($im, 255, 255, 255);
+		$border_color	= imagecolorallocate ($im, 153, 102, 102);
+		$text_color		= imagecolorallocate ($im, 100, 0, 0);
+		$grid_color		= imagecolorallocate($im, 255, 182, 182);
+		$shadow_color	= imagecolorallocate($im, 255, 240, 240);
+	
+		// -----------------------------------
+		//  Create the rectangle
+		// -----------------------------------
+		
+		ImageFilledRectangle($im, 0, 0, $img_width, $img_height, $bg_color);
+		
+		// -----------------------------------
+		//  Create the spiral pattern
+		// -----------------------------------
+		
+		$theta		= 1;
+		$thetac		= 7;
+		$radius		= 16;
+		$circles	= 20;
+		$points		= 32;
+	
+		for ($i = 0; $i < ($circles * $points) - 1; $i++) {
+			$theta = $theta + $thetac;
+			$rad = $radius * ($i / $points );
+			$x = ($rad * cos($theta)) + $x_axis;
+			$y = ($rad * sin($theta)) + $y_axis;
+			$theta = $theta + $thetac;
+			$rad1 = $radius * (($i + 1) / $points);
+			$x1 = ($rad1 * cos($theta)) + $x_axis;
+			$y1 = ($rad1 * sin($theta )) + $y_axis;
+			imageline($im, $x, $y, $x1, $y1, $grid_color);
+			$theta = $theta - $thetac;
+		}
+	
+		// -----------------------------------
+		//  Write the text
+		// -----------------------------------
+		
+		$use_font = ($font_path != '' AND file_exists($font_path) AND function_exists('imagettftext')) ? TRUE : FALSE;
+			
+		if ($use_font == FALSE) {
+			$font_size =7;
+			$x = rand(0, $img_width/($length/2));
+			$y = 0;
+		}
+		else {
+			$font_size	= 16;
+			$x = rand(0, $img_width/($length/1.5));
+			$y = $font_size+2;
+		}		
+		for ($i = 0; $i < strlen($word); $i++) {
+			if ($use_font == FALSE) {
+				$y = rand(0 , $img_height/2);
+				imagestring($im, $font_size, $x, $y, substr($word, $i, 1), $text_color);
+				$x += ($font_size*2);
+			}
+			else {		
+				$y = rand($img_height/2, $img_height-3);
+				imagettftext($im, $font_size, $angle, $x, $y, $text_color, $font_path, substr($word, $i, 1));
+				$x += $font_size;
+			}
+		}		
+	
+		// -----------------------------------
+		//  Create the border
+		// -----------------------------------
+	
+		imagerectangle($im, 0, 0, $img_width-1, $img_height-1, $border_color);		
+	
+		// -----------------------------------
+		//  Generate the image
+		// -----------------------------------
+		
+		$img_name = $now.'.jpg';		
+		
+		ImageJPEG($im, $img_path.$img_name);		
+		$img = "<img src=\"$img_url$img_name\" width=\"$img_width\" height=\"$img_height\" style=\"border:0;\" class=\"bmg-security-img\" alt=\" \" />";
+		ImageDestroy($im);
+		return array('word' => $word, 'time' => $now, 'image' => $img);
+}
+
 
 
 

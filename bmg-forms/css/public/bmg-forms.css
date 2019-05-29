@@ -13,6 +13,7 @@
  	color: #fff !important;
  }
  .bmg-list-errors { list-style: none; padding-left: 0; }
+ .bmg-list-errors a { text-decoration: none  !important; }
 .bmg-forms-mail-error{
 	 border: 2px solid #ff0000;
 }
@@ -88,6 +89,22 @@
     margin-left: 0px; margin-right: 10px;
 }
 
+.kc-toggle {
+    padding-left: 0 !important;
+}
+
+.kc-toggle input {
+    height: 0;
+    overflow: hidden;
+    width: 0;
+    opacity: 0;
+    pointer-events: none;
+    margin: 0;
+}
+
+.bmg-captcha-field { width:110px !important; float:left; margin-right:10px; }
+.clearfix { clear: both; }
+
 /********************** Success Button ********************************************/
 .btn-success {
     color: #fff !important;
@@ -103,4 +120,83 @@
     color: #fff !important ;
     background-color: #1e7e34 !important ;
     border-color: #1c7430 !important;
+}
+
+/****************************** Danger Button ***************************************/
+.btn-danger {
+    color: #fff !important;
+    background-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+}
+
+.btn-danger:hover {
+    color: #fff !important;
+    background-color: #c82333 !important;
+    border-color: #bd2130 !important;
+}
+
+.btn-danger:not(:disabled):not(.disabled).active, .btn-danger:not(:disabled):not(.disabled):active, .show>.btn-danger.dropdown-toggle {
+    color: #fff !important;
+    background-color: #bd2130 !important;
+    border-color: #b21f2d !important;
+}
+
+/******************************* Info Button ***************************************/
+
+.btn-info {
+    color: #fff !important;
+    background-color: #17a2b8 !important;
+    border-color: #17a2b8 !important;
+}
+
+.btn-info:hover {
+    color: #fff !important;
+    background-color: #138496 !important;
+    border-color: #117a8b !important;
+}
+
+.btn-info:not(:disabled):not(.disabled).active, .btn-info:not(:disabled):not(.disabled):active, .show>.btn-info.dropdown-toggle {
+    color: #fff !important;
+    background-color: #117a8b !important;
+    border-color: #10707f !important;
+}
+
+/****************************** Primary Button ***************************************/
+
+.btn-primary {
+    color: #fff !important;
+    background-color: #007bff !important;
+    border-color: #007bff !important;
+}
+
+.btn-primary:hover {
+    color: #fff !important;
+    background-color: #0069d9 !important;
+    border-color: #0062cc !important;
+}
+
+.btn-primary:not(:disabled):not(.disabled).active, .btn-primary:not(:disabled):not(.disabled):active, .show>.btn-primary.dropdown-toggle {
+    color: #fff !important;
+    background-color: #0062cc !important;
+    border-color: #005cbf !important;
+}
+
+/******************************* Warning Button **************************************/
+
+.btn-warning {
+    color: #212529 !important;
+    background-color: #ffc107 !important;
+    border-color: #ffc107 !important;
+}
+
+.btn-warning:hover {
+    color: #212529 !important;
+    background-color: #e0a800 !important;
+    border-color: #d39e00 !important;
+}
+
+.btn-warning:not(:disabled):not(.disabled).active, .btn-warning:not(:disabled):not(.disabled):active, .show>.btn-warning.dropdown-toggle {
+    color: #212529 !important;
+    background-color: #d39e00 !important;
+    border-color: #c69500 !important;
 }

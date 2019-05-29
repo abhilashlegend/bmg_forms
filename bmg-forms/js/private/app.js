@@ -1,7 +1,8 @@
 jQuery($ => {
   const fbEditor = document.getElementById("bmg-forms-build-wrap");
   var options = {
-      disabledActionButtons: ['save']
+      disabledActionButtons: ['save','data'],
+      disableFields: ['autocomplete']
     };
   const formBuilder = $(fbEditor).formBuilder(options);
   let formData;
