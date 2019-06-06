@@ -116,9 +116,12 @@ function bmg_forms_shortcode($args, $content="") {
 	$error_message = [];
 	$aria_state = [];
 	$form_fields = [];
+	$field_id = [];
 	$success = false;
 	$form_meta_table = $wpdb->prefix . 'bmg_forms_meta';
 	$captcha = create_captcha();
+	$form_name = getformname($form_id);
+	
 
 	if(isset($_POST) && empty($_SESSION['form_submit'])) {
 	
@@ -166,6 +169,7 @@ function bmg_forms_shortcode($args, $content="") {
 					}	
 				}
 				$form_fields[] = $result[$i]->name;
+				$field_id[$result[$i]->name] = $result[$i]->id;
 				if($result[$i]->maxlength > 0) {
 					$field_max_length = $maxlength;
 				} else {
@@ -209,7 +213,7 @@ function bmg_forms_shortcode($args, $content="") {
 					$field_value = $result[$i]->value;
 				}
 				$form_fields[] = $result[$i]->name;
-
+				$field_id[$result[$i]->name] = $result[$i]->id;
 				$output .= '<div class="form-group">';
 				$output .=	'<label for="' . $result[$i]->name . '">'. $rspan . ' ' . $result[$i]->label . '</label>';
 				$output .=	'<input type="number" name="' . $result[$i]->name . '" id="' . $result[$i]->name . '" aria-required="' . $field_required . '" aria-invalid="" aria-describedby="' . $result[$i]->name . '-error" placeholder="' . $result[$i]->placeholder . '" value="' . $field_value . '" class="' . $result[$i]->classname . '" maxlength="' . $field_max_length . '" min="' . $result[$i]->min . '" max="' . $result[$i]->max . '" step="' . $result[$i]->step . '" />';
@@ -235,6 +239,7 @@ function bmg_forms_shortcode($args, $content="") {
 					$field_value = $result[$i]->value;
 				}
 				$form_fields[] = $result[$i]->name;
+				$field_id[$result[$i]->name] = $result[$i]->id;
 				$output .= '<div class="form-group">';
 				$output .=	'<label for="' . $result[$i]->name . '">'. $rspan . ' ' . $result[$i]->label . '</label>';
 				$output .= '<textarea name="' . $result[$i]->name . '" cols="40" rows="' . $result[$i]->rows . '" class="' . $result[$i]->classname . '" id="' . $result[$i]->name . '" aria-required="' . $field_required . '" aria-invalid="" aria-describedby="' . $result[$i]->name . '-error" placeholder="' . $result[$i]->placeholder . '">' . $field_value . '</textarea>';
@@ -259,6 +264,7 @@ function bmg_forms_shortcode($args, $content="") {
 				$form_fields[] = $result[$i]->name;
 				$option_values = unserialize($result[$i]->sub_values);
 				$option_items = count($option_values);
+				$field_id[$result[$i]->name] = $result[$i]->id;
 				$output .= '<div class="form-group">';
 				$output .=	'<label for="' . $result[$i]->name . '">'. $rspan . ' ' . $result[$i]->label . '</label>';
 				$output .= '<select name="' . $result[$i]->name . '" id="' . $result[$i]->name . '" aria-required="' . $field_required . '" aria-invalid="false" class="' . $result[$i]->classname . '">';
@@ -299,6 +305,7 @@ function bmg_forms_shortcode($args, $content="") {
 					$form_inline = '';
 				}
 				$form_fields[] = $result[$i]->name;
+				$field_id[$result[$i]->name] = $result[$i]->id;
 				$option_values = unserialize($result[$i]->sub_values);
 				$option_items = count($option_values);
 				$output .= '<div class="form-group">';
@@ -341,6 +348,7 @@ function bmg_forms_shortcode($args, $content="") {
 					$form_inline = '';
 				}
 				$form_fields[] = $result[$i]->name;
+				$field_id[$result[$i]->name] = $result[$i]->id;
 				$option_values = unserialize($result[$i]->sub_values);
 				$option_items = count($option_values);
 				$output .= '<div class="form-group">';
@@ -381,6 +389,7 @@ function bmg_forms_shortcode($args, $content="") {
 					$field_value = $result[$i]->value;
 				}
 				$form_fields[] = $result[$i]->name;
+				$field_id[$result[$i]->name] = $result[$i]->id;
 				$output .= '<div class="form-group">';
 				$output .=	'<label for="' . $result[$i]->name . '">'. $rspan . ' ' . $result[$i]->label . '</label>';
 				$output .=	'<input type="date" name="' . $result[$i]->name . '" id="' . $result[$i]->name . '" aria-required="' . $field_required . '" aria-invalid="" aria-describedby="' . $result[$i]->name . '-error" placeholder="' . $result[$i]->placeholder . '" value="' . $field_value . '" class="' . $result[$i]->classname . '" maxlength="' . $field_max_length . '" />';
@@ -409,6 +418,7 @@ function bmg_forms_shortcode($args, $content="") {
 					$field_arr = '';
 				}
 				$form_fields[] = $result[$i]->name;
+				$field_id[$result[$i]->name] = $result[$i]->id;
 				$output .= '<div class="form-group">';
 				$output .=	'<label for="' . $result[$i]->name . '">'. $rspan . ' ' . $result[$i]->label . '</label>';
 				$output .= '<input placeholder="' . $result[$i]->placeholder . '" class="" name="' . $result[$i]->name . $field_arr . '" ' . $field_multiple . ' type="file" id="' . $result[$i]->name . '" title="' . $result[$i]->description . '">';
@@ -421,6 +431,7 @@ function bmg_forms_shortcode($args, $content="") {
 			if($result[$i]->type == "hidden") {
 				$output .=	'<input type="hidden" name="' . $result[$i]->name . '" id="' . $result[$i]->name . '"  value="' . $result[$i]->value . '"  />';
 				$form_fields[] = $result[$i]->name;
+				$field_id[$result[$i]->name] = $result[$i]->id;
 			}
 
 
@@ -437,12 +448,13 @@ function bmg_forms_shortcode($args, $content="") {
 					$output .= '<input type="hidden" name="bmg_code" id="bmg_code" value="';
 				$output .= $captcha['word']; 
 				$output .= '" />';
-				$form_fields[] = 'bmg_security';
 				if(empty(trim(esc_attr($_POST['bmg_security'])))){
 						$error_message['bmg_security'] = "Please enter security code";
 					}
 				}
-				$form_fields[] = $result[$i]->name;	
+				if(!empty(trim(esc_attr($_POST['bmg_security']))) && $_POST['bmg_security'] != $_POST['bmg_code']) {
+					$error_message['bmg_security'] = "Security code does not match";
+				}	
 				$output .= '<div class="form-group">';
 				$output .= '<input type="' . $result[$i]->subtype . '" name="' . $result[$i]->name . '" value="' . $result[$i]->label . '" class="' . $result[$i]->classname . '">';	
 				$output .= '</div>';	
@@ -472,6 +484,60 @@ function bmg_forms_shortcode($args, $content="") {
 				$error_output = '';	
 				echo $error_output;
 			}		
+
+			// If there is no error store data and send mail. 	
+			if(count($_POST) && count($error_message) == 0) {
+			
+				$form_table =  $wpdb->prefix . 'bmg_forms_' . $form_name . $form_id;
+				
+				$sql = "SHOW COLUMNS FROM $form_table";
+				$result = $wpdb->get_results($sql);
+				$count = 0;
+				$fields = [];
+				$table_data = [];
+				$body = '<table>';
+
+				for($i = 0; $i < count($form_fields); $i++) { 
+					$fields[$count] = $result[$count + 1]->Field;
+					$field_name  = $fields[$count];
+					$table_data[$field_name] = $_POST[$field_name];
+					$body .= '<tr><td>' . $field_name . '<td><td>' . $_POST[$field_name] . '</td></tr>'; 
+					$count++;
+				}
+
+				$body .= '</table>';
+
+				
+				$success = $wpdb->insert(
+								$form_table, $table_data
+						   );
+
+				$toadmin = get_option('bmg_forms_admin_email');
+
+
+			$mail_subject = $form_name . ' Submission';
+			
+
+			$headers = array('Content-Type: text/html; charset=UTF-8');
+			 
+			$admin_mail = wp_mail( $toadmin, $mail_subject, $body, $headers );
+
+	
+				
+				$_SESSION['form_submit'] = 'true';
+				
+
+			}
+
+
+			if($success) {
+				$success_output = '<div class="bmg-success-box" role="alert"><Strong>Message successfully sent!</strong>
+						</div>';
+				echo $success_output;
+				foreach($form_fields as $field) {
+					unset($_POST[$field]);
+				}			
+			}
 
 	} else {
 		$output = "<div> Invalid shortcode </div>";
@@ -775,7 +841,7 @@ function bmg_forms_plugin_create_db() {
 	$charset_collate = $wpdb->get_charset_collate();
 	$table_name = $wpdb->prefix . 'bmg_forms';
 	$table_name1 = $wpdb->prefix . 'bmg_forms_meta';
-	
+	$table_name2 = $wpdb->prefix . 'bmg_forms_submissions';	
 
 	require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 
@@ -817,6 +883,19 @@ function bmg_forms_plugin_create_db() {
 	) $charset_collate;";
 	$wpdb->query($sql);
 
+
+	$sql = "CREATE TABLE IF NOT EXISTS $table_name2 (
+		id mediumint(9) NOT NULL AUTO_INCREMENT,
+		form_id mediumint(9) NOT NULL,
+		field_id mediumint(9) NOT NULL,
+		record_id mediumint(9) NOT NULL,
+		value text,
+		PRIMARY KEY  (id),
+		FOREIGN KEY  (form_id) REFERENCES  $table_name(id),
+		FOREIGN KEY  (field_id) REFERENCES  $table_name1(id)
+	) $charset_collate;";
+	$wpdb->query($sql);
+
 }
 
 // 5.2
@@ -840,6 +919,19 @@ function bmg_forms_remove_plugin_tables() {
 				$charset_collate = $wpdb->get_charset_collate();
 				$table_name = $wpdb->prefix . 'bmg_forms';
 				$table_name1 = $wpdb->prefix . 'bmg_forms_meta';
+				$table_name2 = $wpdb->prefix . 'bmg_forms_submissions';
+
+
+				$result = $wpdb->get_results("SELECT * FROM $table_name ORDER BY id");
+
+				if($result) {
+					foreach($result as $row) {
+						$form_table = $wpdb->prefix . 'bmg_forms_' . $row->form_name . $row->id;
+						$delete_table_sql = "DROP TABLE IF EXISTS  $form_table;";
+						$tables_removed = $wpdb->query($delete_table_sql);
+					}
+				}
+
 				
 
 				$sql = "SET FOREIGN_KEY_CHECKS=0;";
@@ -878,6 +970,9 @@ function bmg_generate_form() {
 			array('%s') 
 		);
 		$form_id = $wpdb->insert_id;
+
+		$form_table =  $wpdb->prefix . 'bmg_forms_' . $form_name . $form_id;
+		$table_fields = [];
 
 		$fields = count($form_data);
 		
@@ -926,6 +1021,7 @@ function bmg_generate_form() {
 							}
 							if($field_name == "name"){
 								$name = $value;
+								$table_fields[] = $name . ' varchar(100)';
 							}
 							if($field_name == "value"){
 								$default_value = $value;
@@ -936,7 +1032,8 @@ function bmg_generate_form() {
 							if($field_name == "maxlength"){
 								$maxlength = $value;
 							}
-						}		 	
+						}
+								 	
 					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,required,label,description,placeholder,classname,name,access,maxlength,value, subtype) VALUES (%d,%s,%d,%s,%s,%s,%s,%s,%d,%d,%s,%s)",$form_id, $field_type, $required, $label, $description, $placeholder, $class, $name, $access, $maxlength, $default_value, $subtype);
     				$wpdb->query($sql);	
 					
@@ -979,6 +1076,7 @@ function bmg_generate_form() {
 							}
 							if($field_name == "name"){
 								$name = $value;
+								$table_fields[] = $name . ' text';
 							}
 							if($field_name == "value"){
 								$default_value = $value;
@@ -1032,6 +1130,7 @@ function bmg_generate_form() {
 							}
 							if($field_name == "name"){
 								$name = $value;
+								$table_fields[] = $name . ' varchar(30)';
 							}
 							if($field_name == "value"){
 								$default_value = $value;
@@ -1086,6 +1185,7 @@ function bmg_generate_form() {
 							}
 							if($field_name == "name"){
 								$name = $value;
+								$table_fields[] = $name . ' varchar(100)';
 							}
 							if($field_name == "access"){
 								$access = $value;
@@ -1134,6 +1234,7 @@ function bmg_generate_form() {
 							}
 							if($field_name == "name"){
 								$name = $value;
+								$table_fields[] = $name . ' varchar(100)';
 							}
 							if($field_name == "access"){
 								$access = $value;
@@ -1187,6 +1288,7 @@ function bmg_generate_form() {
 							}
 							if($field_name == "name"){
 								$name = $value;
+								$table_fields[] = $name . ' text';
 							}
 							if($field_name == "access"){
 								$access = $value;
@@ -1214,6 +1316,7 @@ function bmg_generate_form() {
 							
 							if($field_name == "name"){
 								$name = $value;
+								$table_fields[] = $name . ' varchar(30)';
 							}
 							if($field_name == "value"){
 								$default_value = $value;
@@ -1259,6 +1362,7 @@ function bmg_generate_form() {
 							}
 							if($field_name == "name"){
 								$name = $value;
+								$table_fields[] = $name . ' varchar(50)';
 							}
 							if($field_name == "access"){
 								$access = $value;
@@ -1305,6 +1409,7 @@ function bmg_generate_form() {
 							}
 							if($field_name == "name"){
 								$name = $value;
+								$table_fields[] = $name . ' varchar(250)';
 							}
 							if($field_name == "access"){
 								$access = $value;
@@ -1354,6 +1459,7 @@ function bmg_generate_form() {
 							}
 							if($field_name == "name"){
 								$name = $value;
+								$table_fields[] = $name . ' varchar(100)';
 							}
 							if($field_name == "access"){
 								$access = $value;
@@ -1462,16 +1568,31 @@ function bmg_generate_form() {
 						}		 	
 					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,label,classname,name,access,style,value,subtype) VALUES (%d,%s,%s,%s,%s,%d,%s,%s,%s)",$form_id, $field_type, $label, $class, $name, $access, $style, $default_value, $subtype);
     				$wpdb->query($sql);	
+
+
 					
 				}
 
-				echo "form successfully created";				
+
+								
 
 
 			}
 		}
+		
+		$table_col_names = implode(', ', $table_fields);
+	$sql = "CREATE TABLE IF NOT EXISTS $form_table  (
+					id mediumint(9) NOT NULL AUTO_INCREMENT,
+					$table_col_names,
+					PRIMARY KEY  (id)
+				) $charset_collate;";
+				$wpdb->query($sql);
+
+				echo "form successfully created";
 	
 	}
+
+	
 
 	
 	 wp_die();
@@ -1596,12 +1717,8 @@ function bmg_get_option( $option_name ) {
 function bmg_get_default_options() {
 	
 	$defaults = array();
-	
-	try {
-		
-		
-		
-		
+
+	try {	
 		// setup defaults array
 		$defaults = array(
 			'bmg_forms_admin_email' => '',
@@ -1803,7 +1920,30 @@ function create_captcha($data = '', $img_path = '', $img_url = '', $font_path = 
 }
 
 
+// 6.6
+function getformname($id) {
+	global $wpdb;
+	$table_name = $wpdb->prefix . 'bmg_forms';
+	$form_name = $wpdb->get_var(
+		$wpdb->prepare(
+			"
+				SELECT form_name 
+				FROM $table_name
+				WHERE id=%d	
+			",
+			$id
+		)
+	);
+	return $form_name;
+}
 
+function getbmgformstables() {
+	global $wpdb;
+	$table_name = $wpdb->prefix . 'bmg_forms';
+	$sql = "SELECT * FROM $table_name";
+	$result = $wpdb->get_results($sql);
+	return $result;
+}
 
 
 

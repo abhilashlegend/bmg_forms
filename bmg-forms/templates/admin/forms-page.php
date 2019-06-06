@@ -31,6 +31,25 @@ $result = $wpdb->get_results("SELECT * FROM $table_name ORDER BY id");
 						 
 				}
 
+				if(isset($_POST['delete'])) {
+					$row_array = $_POST['post'];
+					$row_ids = implode(', ', $row_array);
+
+					//$form_name = getformname($row_array);
+					foreach($row_array as $f) {
+						$form_name = getformname($f);
+						$form_table = $wpdb->prefix . 'bmg_forms_' . $form_name . $f;
+						$delete_table_sql = "DROP TABLE IF EXISTS  $form_table;";
+						$tables_removed = $wpdb->query($delete_table_sql);
+						
+					}
+					$delete_sql = "DELETE from $table_name WHERE id IN ($row_ids)";
+					$delete_result = $wpdb->query($delete_sql);
+					if($delete_result) {
+							$message = count($row_array) . " form(s) deleted.";
+					} 
+				}
+
 
 				$query = "SELECT * FROM $table_name ORDER BY id $limit"; 
 				$result = $wpdb->get_results($query);
@@ -40,6 +59,16 @@ $result = $wpdb->get_results("SELECT * FROM $table_name ORDER BY id");
 
 <div class="wrap">
 	<h1 class="wp-heading-inline"><?php esc_html_e( get_admin_page_title() ); ?></h1>
+	<?php
+		if(isset($message)) {
+		?>
+			<div id="message" class="updated notice is-dismissible"><p><?php echo $message; ?> </p><button type="button" class="notice-dismiss"><span class="screen-reader-text">Dismiss this notice.</span></button></div>
+	<?php } ?>
+<form method="post" name="bmg_frm">
+<div class="tablenav top">
+	<div class="alignleft bulkactions">
+		<input type="submit" id="doaction" name="delete" class="button" value="Delete">
+	</div>
 	<div class="tablenav-pages">
 				<?php
 		 if($items > 0) { ?>
@@ -52,9 +81,14 @@ $result = $wpdb->get_results("SELECT * FROM $table_name ORDER BY id");
 				
 			</div>
 			<br class="clear" />
+	</div>
 	<table class="wp-list-table widefat fixed striped posts">
 		<thead>
 			<tr>
+				<td class="manage-column column-cb check-column">
+					<label class="screen-reader-text" for="cb-select-all-1">Select All</label>
+					<input id="cb-select-all-1" type="checkbox">
+				</td>
 				<th class="manage-column column-title column-primary">
 					<b>Form</b>
 				</th>
@@ -62,13 +96,19 @@ $result = $wpdb->get_results("SELECT * FROM $table_name ORDER BY id");
 					<b>Shortcode</b>
 				</th>
 			</tr>
-		<thead>
+		</thead>
 		<tbody>
 			<?php
 			if($result) {
 	foreach($result as $row) {
 						?>
 			<tr>
+				<th scope="row" class="check-column">	
+				
+												
+					<input id="cb-select-<?php echo $row->id; ?>" type="checkbox" name="post[]" value="<?php echo $row->id; ?>">
+			
+					</th>
 				<td>
 					<?php
 						echo $row->form_name;
@@ -77,6 +117,7 @@ $result = $wpdb->get_results("SELECT * FROM $table_name ORDER BY id");
 				<td>
 					[bmg_forms <?php echo 'Id="' . $row->id . '"'; ?>]
 				</td>
+				
 			</tr>
 			<?php
 				}
@@ -84,4 +125,5 @@ $result = $wpdb->get_results("SELECT * FROM $table_name ORDER BY id");
 			?>		
 		</tbody>
 	</table>
+</form>
 </div> <!-- End of wrap -->

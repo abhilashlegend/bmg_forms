@@ -3,19 +3,24 @@ namespace bmg_forms\lib;
 session_start();
 global $wpdb;
 $message = NULL;
-$tables = new \stdClass();
-$tables->list =  ['bmg_contact_us','bmg_volunteer','bmg_feedback', 'bmg_service_inquiry'];
-$tables->title = ['Contact us', 'Volunteer','Feedback','Service inquiry'];
+
+
+$table_list = getbmgformstables();
+
 $enable_detail = false;
 // $_SESSION["table_name"] = $wpdb->prefix . 'bmg_contact_us';
 if($_SESSION["table_name"] == NULL){
-	$_SESSION["table_name"] = $wpdb->prefix . 'bmg_contact_us';
+	if($table_list){
+		$_SESSION["table_name"] = $wpdb->prefix . 'bmg_forms_' . $table_list[0]->form_name . $table_list[0]->id;	
+	}
+	
 }
 if(isset($_POST['bmg-forms'])) {
-	$_SESSION["table_name"] = $wpdb->prefix . $_POST['bmg-forms'];
+	$_SESSION["table_name"] = $_POST['bmg-forms'];
 }
 
 $table_name = $_SESSION["table_name"];
+
 $result = $wpdb->get_results("SELECT * FROM $table_name");
 $items = $wpdb->num_rows;
 					$rows_limit = get_option('bmg_table_row_limit');
@@ -74,20 +79,14 @@ $items = $wpdb->num_rows;
 					<option value=''>SELECT</option>
 					<?php
 						
-						foreach ($tables->list as $key => $table) {
+						foreach ($table_list as $key => $table) {
 							$selected = '';
-							if($table_name ==  $wpdb->prefix . $table){
+							if($table_name ==  $wpdb->prefix . 'bmg_forms_' . $table->form_name . $table->id){
 								$selected = "selected='selected'";	
 							}
-							 echo "<option value=" . $table . " " . $selected . ">" . $tables->title[$key] . "</option>";    
-							
+							 echo "<option value=" . $wpdb->prefix . 'bmg_forms_' . $table->form_name . $table->id . " " . $selected . ">" . $table->form_name . "</option>";    	
 						}
-						/*for($i = 0; $i < count($tables); $i++){
-							echo "<option value='" . $tables[0]->list[$i] . "'>'" . $tables[1]->title[$i] . "'</option>";	
-						} */
-						
 					?>
-					
 				</select>
 			</div>
 			<div class="tablenav-pages">
