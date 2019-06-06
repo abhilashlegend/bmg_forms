@@ -1,5 +1,29 @@
 /* General styles */
 .text-center { text-align: center; }
+.pull-right { float:right; }
+.btn {
+    display: inline-block;
+    font-weight: 400;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    border: 1px solid transparent;
+    padding: .375rem .75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    border-radius: .25rem;
+    transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+.btn-sm {
+    padding: .15rem .5rem;
+    font-size: .700rem;
+    line-height: 1.5;
+    border-radius: .2rem;
+}
 .bmg-forms-new-form {     padding: 3px 8px;
     font-size: 1.7em;
     line-height: 100%;
@@ -18,6 +42,16 @@
     background: #FFF;
     color:#0D7D7C;
     border: 1px solid #0D7D7C;
+}
+.btn-primary {
+    color: #fff;
+    background-color: #007bff;
+    border-color: #007bff;
+}
+.btn-primary:hover {
+    color: #fff;
+    background-color: #0069d9;
+    border-color: #0062cc;
 }
 .btn-danger {
         color: #fff;

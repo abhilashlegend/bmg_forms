@@ -784,6 +784,17 @@ function bmg_contact_us_form_shortcode($args, $content="") {
 			'bmg_submission_detail_markup'
 		);
 
+
+		/* Mail Config page */
+		add_submenu_page (
+			null,
+			__( 'Mail Configuration', 'bmg-mail-config' ),
+			__( 'Mail Configuration', 'bmg-mail-config'),
+			'manage_options',
+			'bmg_mail_config',
+			'bmg_mail_config_markup'
+		);
+
 		/* Settings page */
 		add_submenu_page (
 			'bmg-forms',
@@ -2007,7 +2018,15 @@ function bmg_new_form_markup() {
 	include( plugin_dir_path( __FILE__ ) . './templates/admin/new-form.php');
 }
 
+/* 8.5 mail config page */
+function bmg_mail_config_markup() {
+	//Double check user capabilities
+	if( !current_user_can('manage_options')) {
+		return;
+	}
 
+	include( plugin_dir_path( __FILE__ ) . './templates/admin/mail-config.php');
+}
 
 
 // 9.1

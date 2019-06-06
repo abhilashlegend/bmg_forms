@@ -1,6 +1,6 @@
 <?php
 namespace bmg_forms\lib;
-session_start();
+//session_start();
 global $wpdb;
 $message = NULL;
 
