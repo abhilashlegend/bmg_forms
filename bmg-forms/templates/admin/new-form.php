@@ -10,6 +10,6 @@
 		
 	</div>
 	<div class="saveDataWrap">
-  <button id="saveData" type="button">Generate Form</button>
+ <!--  <button id="saveData" type="button" class="btn savebtn">Generate Form</button> -->
 </div>
 </div>

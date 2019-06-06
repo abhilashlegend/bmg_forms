@@ -1,7 +1,35 @@
 /* General styles */
 .text-center { text-align: center; }
-
-
+.bmg-forms-new-form {     padding: 3px 8px;
+    font-size: 1.7em;
+    line-height: 100%;
+    height: 1.7em;
+    outline: 0;
+    margin: 0 0 3px;
+    background-color: #fff; }
+    .form-wrap.form-builder .btn {
+        border-radius: none;
+    }
+.savebtn { background: #0D7D7C; 
+    color:#FFF;
+     border: 1px solid #0D7D7C;
+}
+.savebtn:hover {
+    background: #FFF;
+    color:#0D7D7C;
+    border: 1px solid #0D7D7C;
+}
+.btn-danger {
+        color: #fff;
+    background-color: #dc3545;
+    border-color: #dc3545;
+    border-radius: 0px;
+}
+.btn-danger:hover {
+    color: #fff;
+    background-color: #c82333;
+    border-color: #bd2130;
+}
 /* Pagination styles */
 .bmg-pagination {
     display: inline-block; float:right !important;

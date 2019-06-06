@@ -121,6 +121,12 @@ $result = $wpdb->get_results("SELECT * FROM $table_name ORDER BY id");
 			</tr>
 			<?php
 				}
+			} else {?>
+				<tr>
+					<td colspan="3" class="text-center">No Forms created yet.</td>
+				</tr>
+
+			<?php
 			}	
 			?>		
 		</tbody>

@@ -841,7 +841,7 @@ function bmg_forms_plugin_create_db() {
 	$charset_collate = $wpdb->get_charset_collate();
 	$table_name = $wpdb->prefix . 'bmg_forms';
 	$table_name1 = $wpdb->prefix . 'bmg_forms_meta';
-	$table_name2 = $wpdb->prefix . 'bmg_forms_submissions';	
+	$table_name2 = $wpdb->prefix . 'bmg_forms_mails';	
 
 	require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 
@@ -887,12 +887,13 @@ function bmg_forms_plugin_create_db() {
 	$sql = "CREATE TABLE IF NOT EXISTS $table_name2 (
 		id mediumint(9) NOT NULL AUTO_INCREMENT,
 		form_id mediumint(9) NOT NULL,
-		field_id mediumint(9) NOT NULL,
-		record_id mediumint(9) NOT NULL,
-		value text,
+		to varchar(100) NOT NULL,
+		from_user varchar(100),
+		subject varchar(100),
+		additional_headers text,
+		message_body text,
 		PRIMARY KEY  (id),
-		FOREIGN KEY  (form_id) REFERENCES  $table_name(id),
-		FOREIGN KEY  (field_id) REFERENCES  $table_name1(id)
+		FOREIGN KEY  (form_id) REFERENCES  $table_name(id)
 	) $charset_collate;";
 	$wpdb->query($sql);
 

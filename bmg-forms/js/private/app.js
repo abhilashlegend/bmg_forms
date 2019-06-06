@@ -2,7 +2,15 @@ jQuery($ => {
   const fbEditor = document.getElementById("bmg-forms-build-wrap");
   var options = {
       disabledActionButtons: ['save','data'],
-      disableFields: ['autocomplete']
+      disableFields: ['autocomplete'],  
+      actionButtons: [{
+        id: 'saveData',
+        className: 'btn savebtn',
+        label: 'Generate Form',
+        type: 'button',
+        events: {
+      }
+      }]
     };
   const formBuilder = $(fbEditor).formBuilder(options);
   let formData;
