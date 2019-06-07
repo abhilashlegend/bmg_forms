@@ -34,6 +34,26 @@
     .form-wrap.form-builder .btn {
         border-radius: none;
     }
+
+ .bmg-input-error {
+    font-size: 1em;
+    font-weight: normal;
+    display: block;
+    line-height: 1.42857;
+    color: #fff !important;
+    background-color: #b10018;
+    border-color: #b10018;
+    margin: 20px 0;
+    padding: 5px 10px;
+ }
+ .bmg-input-error a, .bmg-input-error h3 {
+    color: #fff !important;
+ }
+ .bmg-list-errors { list-style: none; padding-left: 0; }
+ .bmg-list-errors a { text-decoration: none  !important; }
+.bmg-forms-mail-error{
+     border: 2px solid #ff0000;
+}    
 .savebtn { background: #0D7D7C; 
     color:#FFF;
      border: 1px solid #0D7D7C;
