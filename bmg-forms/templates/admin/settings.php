@@ -1,6 +1,6 @@
 <?php
 // get the default values for our options
-	$options = bmg_get_current_options();
+	$options = bmg_forms_get_current_options();
 
 ?>
 <div class="wrap">

@@ -9,7 +9,5 @@
 	<div id="bmg-forms-build-wrap">
 		
 	</div>
-	<div class="saveDataWrap">
- <!--  <button id="saveData" type="button" class="btn savebtn">Generate Form</button> -->
-</div>
+	
 </div>

@@ -117,6 +117,7 @@ $result = $wpdb->get_results("SELECT * FROM $table_name ORDER BY id");
 				<td>
 					[bmg_forms <?php echo 'Id="' . $row->id . '"'; ?>]
 					<a href="<?php  echo esc_html( admin_url('admin.php?page=bmg_mail_config&form_id=' ) ) . $row->id; ?>" class="btn btn-primary btn-sm pull-right">Mail Config</a>
+					<a href="<?php  echo esc_html( admin_url('admin.php?page=bmg_edit_form&form_id=' ) ) . $row->id; ?>" class="btn btn-success btn-sm pull-right mr-2">Edit</a>
 				</td>
 				
 			</tr>

@@ -1,6 +1,5 @@
 <?php
 namespace bmg_forms\lib;
-//session_start();
 global $wpdb;
 $message = NULL;
 
@@ -129,6 +128,7 @@ $items = $wpdb->num_rows;
 					} 
 						
 $count++;
+
 					 ?>
 				
 				<?php
@@ -146,6 +146,7 @@ $count++;
 				 $table_data = $wpdb->get_results("SELECT $tab_col_names FROM $table_name $limit");
 				 if($table_data) {
 							foreach($table_data as $i => $value) {
+
 				?>
 				<tr 
 					<?php
@@ -167,7 +168,12 @@ $count++;
 					
 			   <td>
 				<?php
-				echo $d;
+				if(filter_var($d, FILTER_VALIDATE_URL)) { 
+				echo '<a href="' . $d . '">Download file</a>';
+				} else {
+					echo $d;
+				}
+
 				?>
 			   </td>
 			   <?php 
@@ -182,7 +188,8 @@ $count++;
 		<?php } else {  ?>
 			<tr>
 				<?php
-					if($table_name == "wp_") {
+
+					if($count == 0) {
 						echo "<td> </td>";
 					}
 				?>

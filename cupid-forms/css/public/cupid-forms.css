@@ -1,0 +1,202 @@
+ .cupid-input-error {
+ 	font-size: 1em;
+    font-weight: normal;
+    display: block;
+    line-height: 1.42857;
+    color: #fff !important;
+    background-color: #b10018;
+    border-color: #b10018;
+    margin: 20px 0;
+    padding: 5px 10px;
+ }
+ .cupid-input-error a, .cupid-input-error h3 {
+ 	color: #fff !important;
+ }
+ .cupid-list-errors { list-style: none; padding-left: 0; }
+ .cupid-list-errors a { text-decoration: none  !important; }
+.cupid-forms-mail-error{
+	 border: 2px solid #ff0000;
+}
+.cupid-success-box {
+	 background-color:#155724;
+	 display: block;
+	 line-height: 1.42857;
+	 color: #fff;
+	 margin: 20px 0;
+	 padding: 5px 10px;
+}
+.form-group {
+    margin-bottom: 1rem;
+}
+.form-control {
+    display: block;
+    width: 100%;
+    padding: .375rem .75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    border-radius: .25rem;
+    transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+.text-muted {
+    color: #6c757d!important;
+}
+.form-text {
+    display: block;
+    margin-top: .25rem;
+}
+.small, small {
+    font-size: 80%;
+    font-weight: 400;
+}
+
+.form-group label span { color:red; }
+.form-check {
+    position: relative;
+    display: block;
+    
+}
+.form-check-input {
+    position: absolute;
+    margin-top: .3rem;
+}
+.form-check-label {
+    margin-bottom: 0; margin-left: 15px;
+}
+
+.form-check-inline {
+    display: -webkit-inline-box;
+    display: -ms-inline-flexbox;
+    display: inline-flex;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    padding-left: 0;
+    margin-right: .75rem;
+}
+
+.form-check-inline .form-check-input {
+    position: static;
+    margin-top: 0;
+    margin-right: .3125rem;
+    margin-left: 0;
+}
+
+.form-check-inline .form-check-label {
+    margin-left: 0px; margin-right: 10px;
+}
+
+.kc-toggle {
+    padding-left: 0 !important;
+}
+
+.kc-toggle input {
+    height: 0;
+    overflow: hidden;
+    width: 0;
+    opacity: 0;
+    pointer-events: none;
+    margin: 0;
+}
+
+.cupid-captcha-field { width:110px !important; float:left; margin-right:10px; }
+.clearfix { clear: both; }
+
+/********************** Success Button ********************************************/
+.btn-success {
+    color: #fff !important;
+    background-color: #28a745 !important;
+    border-color: #28a745 !important;
+}
+.btn-success:hover {
+    color: #fff !important;
+    background-color: #218838 !important;
+    border-color: #1e7e34 !important;
+}
+.btn-success:not(:disabled):not(.disabled).active, .btn-success:not(:disabled):not(.disabled):active, .show>.btn-success.dropdown-toggle {
+    color: #fff !important ;
+    background-color: #1e7e34 !important ;
+    border-color: #1c7430 !important;
+}
+
+/****************************** Danger Button ***************************************/
+.btn-danger {
+    color: #fff !important;
+    background-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+}
+
+.btn-danger:hover {
+    color: #fff !important;
+    background-color: #c82333 !important;
+    border-color: #bd2130 !important;
+}
+
+.btn-danger:not(:disabled):not(.disabled).active, .btn-danger:not(:disabled):not(.disabled):active, .show>.btn-danger.dropdown-toggle {
+    color: #fff !important;
+    background-color: #bd2130 !important;
+    border-color: #b21f2d !important;
+}
+
+/******************************* Info Button ***************************************/
+
+.btn-info {
+    color: #fff !important;
+    background-color: #17a2b8 !important;
+    border-color: #17a2b8 !important;
+}
+
+.btn-info:hover {
+    color: #fff !important;
+    background-color: #138496 !important;
+    border-color: #117a8b !important;
+}
+
+.btn-info:not(:disabled):not(.disabled).active, .btn-info:not(:disabled):not(.disabled):active, .show>.btn-info.dropdown-toggle {
+    color: #fff !important;
+    background-color: #117a8b !important;
+    border-color: #10707f !important;
+}
+
+/****************************** Primary Button ***************************************/
+
+.btn-primary {
+    color: #fff !important;
+    background-color: #007bff !important;
+    border-color: #007bff !important;
+}
+
+.btn-primary:hover {
+    color: #fff !important;
+    background-color: #0069d9 !important;
+    border-color: #0062cc !important;
+}
+
+.btn-primary:not(:disabled):not(.disabled).active, .btn-primary:not(:disabled):not(.disabled):active, .show>.btn-primary.dropdown-toggle {
+    color: #fff !important;
+    background-color: #0062cc !important;
+    border-color: #005cbf !important;
+}
+
+/******************************* Warning Button **************************************/
+
+.btn-warning {
+    color: #212529 !important;
+    background-color: #ffc107 !important;
+    border-color: #ffc107 !important;
+}
+
+.btn-warning:hover {
+    color: #212529 !important;
+    background-color: #e0a800 !important;
+    border-color: #d39e00 !important;
+}
+
+.btn-warning:not(:disabled):not(.disabled).active, .btn-warning:not(:disabled):not(.disabled):active, .show>.btn-warning.dropdown-toggle {
+    color: #212529 !important;
+    background-color: #d39e00 !important;
+    border-color: #c69500 !important;
+}
