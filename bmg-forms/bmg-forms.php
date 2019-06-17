@@ -94,6 +94,11 @@ add_action('wp_ajax_bmg_generate_form','bmg_generate_form'); //admin user
 // update form 
 add_action('wp_ajax_bmg_forms_update_form','bmg_forms_update_form'); //admin user
 
+
+//1.10
+// Delete Field and Drop column
+add_action('wp_ajax_bmg_forms_delete_field','bmg_forms_delete_field'); //admin user
+
 function boot_session() {
   session_start();
 }
@@ -134,7 +139,7 @@ function bmg_forms_shortcode($args, $content="") {
 	$image_path = null;
 
 	if(isset($form_id)) {
-		$result = $wpdb->get_results("SELECT * FROM $form_meta_table WHERE form_id=$form_id ORDER BY id ASC");
+		$result = $wpdb->get_results("SELECT * FROM $form_meta_table WHERE form_id=$form_id ORDER BY field_order ASC");
 
 		$form_items = count($result);
 
@@ -760,6 +765,7 @@ function bmg_forms_plugin_create_db() {
 	$sql = "CREATE TABLE IF NOT EXISTS $table_name1 (
 		id mediumint(9) NOT NULL AUTO_INCREMENT,
 		form_id mediumint(9) NOT NULL,
+		field_order mediumint(9),
 		type varchar(30) NOT NULL,
 		required boolean DEFAULT 0,
 		label text,
@@ -784,13 +790,14 @@ function bmg_forms_plugin_create_db() {
 		inline boolean DEFAULT 0,
 		PRIMARY KEY  (id),
 		FOREIGN KEY  (form_id) REFERENCES  $table_name(id)
+		ON DELETE CASCADE
 	) $charset_collate;";
 	$wpdb->query($sql);
 
 
 	$upload = wp_upload_dir();
     $upload_dir = $upload['basedir'];
-    $upload_dir = $upload_dir . '/bmg-company-listing';
+    $upload_dir = $upload_dir . '/bmg-forms';
     if (! is_dir($upload_dir)) {
        mkdir( $upload_dir, 0700 );
     }
@@ -865,7 +872,7 @@ function bmg_forms_remove_plugin_tables() {
 				$sql = "SET FOREIGN_KEY_CHECKS=0;";
 				$wpdb->query($sql);
 			
-				$sql = "DROP TABLE IF EXISTS  $table_name, $table_name1;";
+				$sql = "DROP TABLE IF EXISTS  $table_name, $table_name1, $table_name2;";
 				$tables_removed = $wpdb->query($sql);
 		}
 		catch (Exception $e) {
@@ -890,9 +897,10 @@ function bmg_forms_update_form() {
 			$form_table =  $wpdb->prefix . 'bmg_forms_' . $form_name . $form_id;
 
 			$fields = count($form_data);
-
+			$field_order = 0;
 			for($i = 0; $i < $fields; $i++){
-				$counter = 0;
+				
+			$field_order++;
 				foreach ($form_data[$i] as $field_name => $value) {
 
 					/* Text Field */
@@ -959,6 +967,7 @@ function bmg_forms_update_form() {
 			                $table_name1, //table
 				               array( 
 									'form_id' => $form_id, 
+									'field_order' => $field_order,
 									'type' => $field_type,
 									'required' => $required,
 									'label' 	=> $label,
@@ -972,7 +981,7 @@ function bmg_forms_update_form() {
 									'subtype' => $subtype
 								), //data
 				                array('id' => $id), //where
-				                array('%d','%s','%d','%s','%s','%s','%s','%s','%d','%d','%s','%s'), //data format
+				                array('%d','%d','%s','%d','%s','%s','%s','%s','%s','%d','%d','%s','%s'), //data format
 				                array('%d') //where format
 				        	 );
 
@@ -983,7 +992,7 @@ function bmg_forms_update_form() {
 
 
 					    } else {
-					    		$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,required,label,description,placeholder,classname,name,access,maxlength,value, subtype) VALUES (%d,%s,%d,%s,%s,%s,%s,%s,%d,%d,%s,%s)",$form_id, $field_type, $required, $label, $description, $placeholder, $class, $name, $access, $maxlength, $default_value, $subtype);
+					    		$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,field_order,type,required,label,description,placeholder,classname,name,access,maxlength,value, subtype) VALUES (%d,%d,%s,%d,%s,%s,%s,%s,%s,%d,%d,%s,%s)",$form_id, $field_order, $field_type, $required, $label, $description, $placeholder, $class, $name, $access, $maxlength, $default_value, $subtype);
     							$wpdb->query($sql);	
 
     							$add_stmt = "ALTER TABLE $form_table ADD $name varchar(100)";
@@ -1058,6 +1067,7 @@ function bmg_forms_update_form() {
 			                $table_name1, //table
 				               array( 
 									'form_id' => $form_id, 
+									'field_order' => $field_order,
 									'type' => $field_type,
 									'required' => $required,
 									'label' 	=> $label,
@@ -1072,7 +1082,7 @@ function bmg_forms_update_form() {
 									'rows' => $rows
 								), //data
 				                array('id' => $id), //where
-				                array('%d','%s','%d','%s','%s','%s','%s','%s','%d','%d','%s','%s','%d'), //data format
+				                array('%d','%d','%s','%d','%s','%s','%s','%s','%s','%d','%d','%s','%s','%d'), //data format
 				                array('%d') //where format
 				        	);
 
@@ -1080,7 +1090,7 @@ function bmg_forms_update_form() {
 							$wpdb->query($chg_stmt);
 
 						} else {
-								$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,required,label,description,placeholder,classname,name,access,maxlength,value, subtype, rows) VALUES (%d,%s,%d,%s,%s,%s,%s,%s,%d,%d,%s,%s,%d)",$form_id, $field_type, $required, $label, $description, $placeholder, $class, $name, $access, $maxlength, $default_value, $subtype, $rows);
+								$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,field_order,type,required,label,description,placeholder,classname,name,access,maxlength,value, subtype, rows) VALUES (%d,%d,%s,%d,%s,%s,%s,%s,%s,%d,%d,%s,%s,%d)",$form_id, $field_order, $field_type, $required, $label, $description, $placeholder, $class, $name, $access, $maxlength, $default_value, $subtype, $rows);
     							$wpdb->query($sql);
 
     							$add_stmt = "ALTER TABLE $form_table ADD $name text";
@@ -1153,6 +1163,7 @@ function bmg_forms_update_form() {
 			                $table_name1, //table
 				               array( 
 									'form_id' => $form_id, 
+									'field_order' => $field_order,
 									'type' => $field_type,
 									'required' => $required,
 									'label' 	=> $label,
@@ -1167,13 +1178,13 @@ function bmg_forms_update_form() {
 									'step' => $step
 								), //data
 				                array('id' => $id), //where
-				                array('%d','%s','%d','%s','%s','%s','%s','%s','%d','%s','%d','%d','%d'), //data format
+				                array('%d','%d','%s','%d','%s','%s','%s','%s','%s','%d','%s','%d','%d','%d'), //data format
 				                array('%d') //where format
 				        	);
 				        	$chg_stmt = "ALTER TABLE $form_table CHANGE $col_name $name varchar(30)";
 							$wpdb->query($chg_stmt);
 						} else {
-							$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,required,label,description,placeholder,classname,name,access,value,min,max,step) VALUES (%d,%s,%d,%s,%s,%s,%s,%s,%d,%s,%d,%d,%d)",$form_id, $field_type, $required, $label, $description, $placeholder, $class, $name, $access, $default_value, $min, $max, $step);
+							$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,field_order,type,required,label,description,placeholder,classname,name,access,value,min,max,step) VALUES (%d,%d,%s,%d,%s,%s,%s,%s,%s,%d,%s,%d,%d,%d)",$form_id, $field_order, $field_type, $required, $label, $description, $placeholder, $class, $name, $access, $default_value, $min, $max, $step);
     						$wpdb->query($sql);	
 
     						$add_stmt = "ALTER TABLE $form_table ADD $name varchar(30)";
@@ -1238,6 +1249,7 @@ function bmg_forms_update_form() {
 			                $table_name1, //table
 				               array( 
 									'form_id' => $form_id, 
+									'field_order' => $field_order,
 									'type' => $field_type,
 									'required' => $required,
 									'label' 	=> $label,
@@ -1250,13 +1262,13 @@ function bmg_forms_update_form() {
 									'sub_values' => $options
 								), //data
 				                array('id' => $id), //where
-				                array('%d','%s','%d','%s','%s','%s','%s','%s','%d','%d','%s'), //data format
+				                array('%d','%d','%s','%d','%s','%s','%s','%s','%s','%d','%d','%s'), //data format
 				                array('%d') //where format
 				        	);	
 				        	$chg_stmt = "ALTER TABLE $form_table CHANGE $col_name $name varchar(100)";
 							$wpdb->query($chg_stmt);
 						} else {
-							$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,required,label,description,placeholder,classname,name,access,multiple,sub_values) VALUES (%d,%s,%d,%s,%s,%s,%s,%s,%d,%d,%s)",$form_id, $field_type, $required, $label, $description, $placeholder, $class, $name, $access, $multiple, $options);
+							$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,field_order,type,required,label,description,placeholder,classname,name,access,multiple,sub_values) VALUES (%d,%d,%s,%d,%s,%s,%s,%s,%s,%d,%d,%s)",$form_id, $field_order, $field_type, $required, $label, $description, $placeholder, $class, $name, $access, $multiple, $options);
     						$wpdb->query($sql);		
 
     						$add_stmt = "ALTER TABLE $form_table ADD $name varchar(100)";
@@ -1322,6 +1334,7 @@ function bmg_forms_update_form() {
 			                $table_name1, //table
 				               array( 
 									'form_id' => $form_id, 
+									'field_order' => $field_order,
 									'type' => $field_type,
 									'required' => $required,
 									'label' 	=> $label,
@@ -1334,13 +1347,13 @@ function bmg_forms_update_form() {
 									'sub_values' => $options
 								), //data
 				                array('id' => $id), //where
-				                array('%d','%s','%d','%s','%s','%s','%s','%s','%d','%d','%s'), //data format
+				                array('%d','%d','%s','%d','%s','%s','%s','%s','%s','%d','%d','%s'), //data format
 				                array('%d') //where format
 				        	);	
 				        	$chg_stmt = "ALTER TABLE $form_table CHANGE $col_name $name varchar(100)";
 							$wpdb->query($chg_stmt);
 						} else {
-							$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,required,label,description,inline,classname,name,access,other,sub_values) VALUES (%d,%s,%d,%s,%s,%d,%s,%s,%d,%d,%s)",$form_id, $field_type, $required, $label, $description, $inline, $class, $name, $access, $other, $options);
+							$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,field_order,type,required,label,description,inline,classname,name,access,other,sub_values) VALUES (%d,%d,%s,%d,%s,%s,%d,%s,%s,%d,%d,%s)",$form_id, $field_order, $field_type, $required, $label, $description, $inline, $class, $name, $access, $other, $options);
     						$wpdb->query($sql);
     						$add_stmt = "ALTER TABLE $form_table ADD $name varchar(100)";
 							$wpdb->query($add_stmt);	
@@ -1409,6 +1422,7 @@ function bmg_forms_update_form() {
 			                $table_name1, //table
 				               array( 
 									'form_id' => $form_id, 
+									'field_order' => $field_order,
 									'type' => $field_type,
 									'required' => $required,
 									'label' 	=> $label,
@@ -1422,14 +1436,14 @@ function bmg_forms_update_form() {
 									'sub_values' => $options
 								), //data
 				                array('id' => $id), //where
-				                array('%d','%s','%d','%s','%s','%d','%d','%s','%s','%d','%d','%s'), //data format
+				                array('%d','%d','%s','%d','%s','%s','%d','%d','%s','%s','%d','%d','%s'), //data format
 				                array('%d') //where format
 				        	);	
 
 				        	$chg_stmt = "ALTER TABLE $form_table CHANGE $col_name $name text";
 							$wpdb->query($chg_stmt);
 						} else {
-							$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,required,label,description,toggle,inline,classname,name,access,other,sub_values) VALUES (%d,%s,%d,%s,%s,%d,%d,%s,%s,%d,%d,%s)",$form_id, $field_type, $required, $label, $description, $toggle, $inline, $class, $name, $access, $other, $options);
+							$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id, field_order,type,required,label,description,toggle,inline,classname,name,access,other,sub_values) VALUES (%d,%d,%s,%d,%s,%s,%d,%d,%s,%s,%d,%d,%s)",$form_id, $field_order, $field_type, $required, $label, $description, $toggle, $inline, $class, $name, $access, $other, $options);
     						$wpdb->query($sql);	
 
     						$add_stmt = "ALTER TABLE $form_table ADD $name varchar(100)";
@@ -1471,20 +1485,21 @@ function bmg_forms_update_form() {
 			                $table_name1, //table
 				               array( 
 									'form_id' => $form_id, 
+									'field_order' => $field_order,
 									'type' => $field_type,
 									'name' => $name,
 									'access' => $access,
 									'value' => $default_value
 								), //data
 				                array('id' => $id), //where
-				                array('%d','%s','%s','%d','%s'), //data format
+				                array('%d','%d','%s','%s','%d','%s'), //data format
 				                array('%d') //where format
 				        	);	
 
 				        	$chg_stmt = "ALTER TABLE $form_table CHANGE $col_name $name varchar(30)";
 							$wpdb->query($chg_stmt);
 						} else {
-							$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,name,access,value) VALUES (%d,%s,%s,%d,%s)",$form_id, $field_type, $name, $access, $default_value);
+							$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,field_order,type,name,access,value) VALUES (%d,%d,%s,%s,%d,%s)",$form_id, $field_order, $field_type, $name, $access, $default_value);
     						$wpdb->query($sql);	
 
 							$add_stmt = "ALTER TABLE $form_table ADD $name varchar(30)";
@@ -1545,6 +1560,7 @@ function bmg_forms_update_form() {
 			                $table_name1, //table
 				               array( 
 									'form_id' => $form_id, 
+									'field_order' => $field_order,
 									'type' => $field_type,
 									'required' => $required,
 									'label' => $label,
@@ -1556,14 +1572,14 @@ function bmg_forms_update_form() {
 									'value' => $default_value
 								), //data
 				                array('id' => $id), //where
-				                array('%d','%s','%d','%s','%s','%s','%s','%s','%d','%s'), //data format
+				                array('%d','%d','%s','%d','%s','%s','%s','%s','%s','%d','%s'), //data format
 				                array('%d') //where format
 				        	);	
 
 				        	$chg_stmt = "ALTER TABLE $form_table CHANGE $col_name $name varchar(50)";
 							$wpdb->query($chg_stmt);
 						} else {
-							$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,required,label,description,placeholder,classname,name,access,value) VALUES (%d,%s,%d,%s,%s,%s,%s,%s,%d,%s)",$form_id, $field_type, $required, $label, $description, $placeholder, $class, $name, $access, $default_value);
+							$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,field_order,type,required,label,description,placeholder,classname,name,access,value) VALUES (%d,%d,%s,%d,%s,%s,%s,%s,%s,%d,%s)",$form_id, $field_order, $field_type, $required, $label, $description, $placeholder, $class, $name, $access, $default_value);
     						$wpdb->query($sql);	
 
     						$add_stmt = "ALTER TABLE $form_table ADD $name varchar(50)";
@@ -1625,7 +1641,8 @@ function bmg_forms_update_form() {
 							$wpdb->update(
 			                $table_name1, //table
 				               array( 
-									'form_id' => $form_id, 
+									'form_id' => $form_id,
+									'field_order' => $field_order, 
 									'type' => $field_type,
 									'required' => $required,
 									'label' => $label,
@@ -1638,14 +1655,14 @@ function bmg_forms_update_form() {
 									'multiple' => $multiple
 								), //data
 				                array('id' => $id), //where
-				                array('%d','%s','%d','%s','%s','%s','%s','%s','%d','%s','%d'), //data format
+				                array('%d','%d','%s','%d','%s','%s','%s','%s','%s','%d','%s','%d'), //data format
 				                array('%d') //where format
 				        	);	
 
 				        	$chg_stmt = "ALTER TABLE $form_table CHANGE $col_name $name varchar(250)";
 							$wpdb->query($chg_stmt);
 						} else {
-							$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,required,label,description,placeholder,classname,name,access,subtype,multiple) VALUES (%d,%s,%d,%s,%s,%s,%s,%s,%d,%s,%d)",$form_id, $field_type, $required, $label, $description, $placeholder, $class, $name, $access, $subtype, $multiple);
+							$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,field_order,type,required,label,description,placeholder,classname,name,access,subtype,multiple) VALUES (%d,%d,%s,%d,%s,%s,%s,%s,%s,%d,%s,%d)",$form_id, $field_order, $field_type, $required, $label, $description, $placeholder, $class, $name, $access, $subtype, $multiple);
     						$wpdb->query($sql);	
 
     						$add_stmt = "ALTER TABLE $form_table ADD $name varchar(250)";
@@ -1710,6 +1727,7 @@ function bmg_forms_update_form() {
 			                $table_name1, //table
 				               array( 
 									'form_id' => $form_id, 
+									'field_order' => $field_order,
 									'type' => $field_type,
 									'required' => $required,
 									'label' => $label,
@@ -1722,14 +1740,14 @@ function bmg_forms_update_form() {
 									'sub_values' => $options
 								), //data
 				                array('id' => $id), //where
-				                array('%d','%s','%d','%s','%s','%s','%s','%s','%d','%d','%s'), //data format
+				                array('%d','%d','%s','%d','%s','%s','%s','%s','%s','%d','%d','%s'), //data format
 				                array('%d') //where format
 				        	);	
 
 				        	$chg_stmt = "ALTER TABLE $form_table CHANGE $col_name $name varchar(100)";
 							$wpdb->query($chg_stmt);
 						} else {
-							$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,required,label,description,placeholder,classname,name,access,requirevalidoption,sub_values) VALUES (%d,%s,%d,%s,%s,%s,%s,%s,%d,%d,%s)",$form_id, $field_type, $required, $label, $description, $placeholder, $class, $name, $access, $requirevalidoption, $options);
+							$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id, field_order,type,required,label,description,placeholder,classname,name,access,requirevalidoption,sub_values) VALUES (%d,%d,%s,%d,%s,%s,%s,%s,%s,%d,%d,%s)",$form_id, $field_order, $field_type, $required, $label, $description, $placeholder, $class, $name, $access, $requirevalidoption, $options);
     						$wpdb->query($sql);	
 
     						$add_stmt = "ALTER TABLE $form_table ADD $name varchar(100)";
@@ -1770,6 +1788,7 @@ function bmg_forms_update_form() {
 			                $table_name1, //table
 				               array( 
 									'form_id' => $form_id, 
+									'field_order' => $field_order,
 									'type' => $field_type,
 									'subtype' => $subtype,
 									'label' => $label,
@@ -1777,11 +1796,11 @@ function bmg_forms_update_form() {
 									'access' => $access
 								), //data
 				                array('id' => $id), //where
-				                array('%d','%s','%s','%s','%s','%d'), //data format
+				                array('%d','%d','%s','%s','%s','%s','%d'), //data format
 				                array('%d') //where format
 				        	);	
 						} else {
-							$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,subtype,label,classname,access) VALUES (%d,%s,%s,%s,%s,%d)",$form_id, $field_type, $subtype, $label, $class, $access);
+							$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id, field_order,type,subtype,label,classname,access) VALUES (%d,%d,%s,%s,%s,%s,%d)",$form_id, $field_order, $field_type, $subtype, $label, $class, $access);
     						$wpdb->query($sql);	
 						}		 	
 
@@ -1818,6 +1837,7 @@ function bmg_forms_update_form() {
 			                $table_name1, //table
 				               array( 
 									'form_id' => $form_id, 
+									'field_order' => $field_order,
 									'type' => $field_type,
 									'subtype' => $subtype,
 									'label' => $label,
@@ -1825,11 +1845,11 @@ function bmg_forms_update_form() {
 									'access' => $access
 								), //data
 				                array('id' => $id), //where
-				                array('%d','%s','%s','%s','%s','%d'), //data format
+				                array('%d','%d','%s','%s','%s','%s','%d'), //data format
 				                array('%d') //where format
 				        	);	
 						} else {
-							$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,subtype,label,classname,access) VALUES (%d,%s,%s,%s,%s,%d)",$form_id, $field_type, $subtype, $label, $class, $access);
+							$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,field_order,type,subtype,label,classname,access) VALUES (%d,%d,%s,%s,%s,%s,%d)",$form_id, $field_order, $field_type, $subtype, $label, $class, $access);
     						$wpdb->query($sql);			
 						}		 	
 					
@@ -1879,6 +1899,7 @@ function bmg_forms_update_form() {
 			                $table_name1, //table
 				               array( 
 									'form_id' => $form_id, 
+									'field_order' => $field_order,
 									'type' => $field_type,
 									'label' => $label,
 									'classname' => $class,
@@ -1889,11 +1910,11 @@ function bmg_forms_update_form() {
 									'subtype' => $subtype
 								), //data
 				                array('id' => $id), //where
-				                array('%d','%s','%s','%s','%s','%d','%s','%s','%s'), //data format
+				                array('%d','%d','%s','%s','%s','%s','%d','%s','%s','%s'), //data format
 				                array('%d') //where format
 				        	);	
 						} else {
-							$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,label,classname,name,access,style,value,subtype) VALUES (%d,%s,%s,%s,%s,%d,%s,%s,%s)",$form_id, $field_type, $label, $class, $name, $access, $style, $default_value, $subtype);
+							$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,field_order,type,label,classname,name,access,style,value,subtype) VALUES (%d,%d,%s,%s,%s,%s,%d,%s,%s,%s)",$form_id, $field_order, $field_type, $label, $class, $name, $access, $style, $default_value, $subtype);
     						$wpdb->query($sql);
 						}
 			
@@ -1910,6 +1931,26 @@ function bmg_forms_update_form() {
 		//print_r($form_data);
 					  
 }
+
+function bmg_forms_delete_field() {
+	global $wpdb;
+	$table_name1 = $wpdb->prefix . 'bmg_forms_meta';
+	$form_name = $_POST['formname'];
+	$form_id = $_POST['formid'];
+	$field_id = $_POST['fieldid'];
+	$field_name = $_POST['fieldname'];
+	$table_name = $wpdb->prefix . 'bmg_forms_' . $form_name . $form_id;
+
+	$del_field_sql = "DELETE FROM $table_name1 WHERE id=$field_id";
+	$wpdb->query($del_field_sql);
+
+	$del_col_sql = "ALTER TABLE $table_name DROP $field_name;";
+	$wpdb->query($del_col_sql);	
+
+
+}
+
+
 
 
 function bmg_generate_form() {
@@ -1935,9 +1976,9 @@ function bmg_generate_form() {
 		$table_fields = [];
 
 		$fields = count($form_data);
-		
+		$field_order = 0;
 		for($i = 0; $i < $fields; $i++){
-			$counter = 0;
+			$field_order++;
 			foreach ($form_data[$i] as $field_name => $value) {
 				// echo $field_name . " " . $value . " | ";
 			
@@ -1949,6 +1990,7 @@ function bmg_generate_form() {
 				}*/
 				/* Text Field */	
 				if($value === "text" && $field_name == "type") {
+					
 					$field_type = "text";
 					$subtype = "";
 					$required = false;
@@ -1961,6 +2003,7 @@ function bmg_generate_form() {
 					$access = false;
 					$maxlength = NULL;
 						foreach ($form_data[$i] as $field_name => $value) {
+							
 							if($field_name == "subtype") {
 								$subtype = $value;
 							}
@@ -1995,13 +2038,14 @@ function bmg_generate_form() {
 							}
 						}
 								 	
-					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,required,label,description,placeholder,classname,name,access,maxlength,value, subtype) VALUES (%d,%s,%d,%s,%s,%s,%s,%s,%d,%d,%s,%s)",$form_id, $field_type, $required, $label, $description, $placeholder, $class, $name, $access, $maxlength, $default_value, $subtype);
+					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,field_order,type,required,label,description,placeholder,classname,name,access,maxlength,value, subtype) VALUES (%d,%d,%s,%d,%s,%s,%s,%s,%s,%d,%d,%s,%s)",$form_id,$field_order, $field_type, $required, $label, $description, $placeholder, $class, $name, $access, $maxlength, $default_value, $subtype);
     				$wpdb->query($sql);	
 					
 				}
 
 				/* Text Area */	
 				if($value === "textarea" && $field_name == "type") {
+					
 					$field_type = "textarea";
 					$subtype = "";
 					$required = false;
@@ -2015,6 +2059,7 @@ function bmg_generate_form() {
 					$maxlength = NULL;
 					$rows = NULL;
 						foreach ($form_data[$i] as $field_name => $value) {
+						
 							if($field_name == "subtype") {
 								$subtype = $value;
 							}
@@ -2051,13 +2096,14 @@ function bmg_generate_form() {
 								$rows = $value;	
 							}
 						}		 	
-					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,required,label,description,placeholder,classname,name,access,maxlength,value, subtype, rows) VALUES (%d,%s,%d,%s,%s,%s,%s,%s,%d,%d,%s,%s,%d)",$form_id, $field_type, $required, $label, $description, $placeholder, $class, $name, $access, $maxlength, $default_value, $subtype, $rows);
+					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,field_order,type,required,label,description,placeholder,classname,name,access,maxlength,value, subtype, rows) VALUES (%d,%d,%s,%d,%s,%s,%s,%s,%s,%d,%d,%s,%s,%d)",$form_id, $field_order, $field_type, $required, $label, $description, $placeholder, $class, $name, $access, $maxlength, $default_value, $subtype, $rows);
     				$wpdb->query($sql);	
 					
 				}
 
 				/* Number Field */	
 				if($value === "number" && $field_name == "type") {
+					
 					$field_type = "number";
 					$required = false;
 					$label = "";
@@ -2108,13 +2154,14 @@ function bmg_generate_form() {
 								$step = $value;	
 							}
 						}		 	
-					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,required,label,description,placeholder,classname,name,access,value,min,max,step) VALUES (%d,%s,%d,%s,%s,%s,%s,%s,%d,%s,%d,%d,%d)",$form_id, $field_type, $required, $label, $description, $placeholder, $class, $name, $access, $default_value, $min, $max, $step);
+					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,field_order,type,required,label,description,placeholder,classname,name,access,value,min,max,step) VALUES (%d,%d,%s,%d,%s,%s,%s,%s,%s,%d,%s,%d,%d,%d)",$form_id, $field_order, $field_type, $required, $label, $description, $placeholder, $class, $name, $access, $default_value, $min, $max, $step);
     				$wpdb->query($sql);	
 				
 				}
 
 				/* Select */	
 				if($value === "select" && $field_name == "type") {
+					
 					$field_type = "select";
 					$required = false;
 					$label = "";
@@ -2157,13 +2204,14 @@ function bmg_generate_form() {
 								$options = serialize($value);	
 							}
 						}		 	
-					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,required,label,description,placeholder,classname,name,access,multiple,sub_values) VALUES (%d,%s,%d,%s,%s,%s,%s,%s,%d,%d,%s)",$form_id, $field_type, $required, $label, $description, $placeholder, $class, $name, $access, $multiple, $options);
+					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,field_order,type,required,label,description,placeholder,classname,name,access,multiple,sub_values) VALUES (%d,%d,%s,%d,%s,%s,%s,%s,%s,%d,%d,%s)",$form_id, $field_order, $field_type, $required, $label, $description, $placeholder, $class, $name, $access, $multiple, $options);
     				$wpdb->query($sql);	
 					
 				}
 
 				/* Radio Group */	
 				if($value === "radio-group" && $field_name == "type") {
+					
 					$field_type = "radio-group";
 					$required = false;
 					$label = "";
@@ -2206,13 +2254,14 @@ function bmg_generate_form() {
 								$options = serialize($value);	
 							}
 						}		 	
-					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,required,label,description,inline,classname,name,access,other,sub_values) VALUES (%d,%s,%d,%s,%s,%d,%s,%s,%d,%d,%s)",$form_id, $field_type, $required, $label, $description, $inline, $class, $name, $access, $other, $options);
+					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,field_order,type,required,label,description,inline,classname,name,access,other,sub_values) VALUES (%d,%d,%s,%d,%s,%s,%d,%s,%s,%d,%d,%s)",$form_id, $field_order, $field_type, $required, $label, $description, $inline, $class, $name, $access, $other, $options);
     				$wpdb->query($sql);	
 					
 				}
 
 				/* Checkbox Group */	
 				if($value === "checkbox-group" && $field_name == "type") {
+					
 					$field_type = "checkbox-group";
 					$required = false;
 					$label = "";
@@ -2259,7 +2308,7 @@ function bmg_generate_form() {
 								$options = serialize($value);	
 							}
 						}		 	
-					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,required,label,description,toggle,inline,classname,name,access,other,sub_values) VALUES (%d,%s,%d,%s,%s,%d,%d,%s,%s,%d,%d,%s)",$form_id, $field_type, $required, $label, $description, $toggle, $inline, $class, $name, $access, $other, $options);
+					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,field_order,type,required,label,description,toggle,inline,classname,name,access,other,sub_values) VALUES (%d,%d,%s,%d,%s,%s,%d,%d,%s,%s,%d,%d,%s)",$form_id, $field_order, $field_type, $required, $label, $description, $toggle, $inline, $class, $name, $access, $other, $options);
     				$wpdb->query($sql);	
 					
 				}
@@ -2267,12 +2316,13 @@ function bmg_generate_form() {
 
 				/* Hidden Input */	
 				if($value === "hidden" && $field_name === "type") {
+					
 					$field_type = "hidden";
 					$name = "";
 					$default_value = "";
 					$access = false;
 						foreach ($form_data[$i] as $field_name => $value) {
-							
+						
 							if($field_name == "name"){
 								$name = $value;
 								$name = str_replace("-", "_", $name);
@@ -2285,13 +2335,14 @@ function bmg_generate_form() {
 								$access = $value;
 							}
 						}		 	
-					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,name,access,value) VALUES (%d,%s,%s,%d,%s)",$form_id, $field_type, $name, $access, $default_value);
+					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,field_order,type,name,access,value) VALUES (%d,%d,%s,%s,%d,%s)",$form_id, $field_order, $field_type, $name, $access, $default_value);
     				$wpdb->query($sql);	
 				
 				}
 
 				/* Date Field */	
 				if($value === "date" && $field_name == "type") {
+					
 					$field_type = "date";
 					$required = false;
 					$label = "";
@@ -2330,13 +2381,14 @@ function bmg_generate_form() {
 								$default_value = $value;
 							}
 						}		 	
-					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,required,label,description,placeholder,classname,name,access,value) VALUES (%d,%s,%d,%s,%s,%s,%s,%s,%d,%s)",$form_id, $field_type, $required, $label, $description, $placeholder, $class, $name, $access, $default_value);
+					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,field_order,type,required,label,description,placeholder,classname,name,access,value) VALUES (%d,%d,%s,%d,%s,%s,%s,%s,%s,%d,%s)",$form_id, $field_order, $field_type, $required, $label, $description, $placeholder, $class, $name, $access, $default_value);
     				$wpdb->query($sql);	
 					
 				}
 
 				/* File Upload */	
 				if($value === "file" && $field_name == "type") {
+					
 					$field_type = "file";
 					$required = false;
 					$label = "";
@@ -2379,13 +2431,14 @@ function bmg_generate_form() {
 								$multiple = $value;
 							}
 						}		 	
-					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,required,label,description,placeholder,classname,name,access,subtype,multiple) VALUES (%d,%s,%d,%s,%s,%s,%s,%s,%d,%s,%d)",$form_id, $field_type, $required, $label, $description, $placeholder, $class, $name, $access, $subtype, $multiple);
+					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,field_order,type,required,label,description,placeholder,classname,name,access,subtype,multiple) VALUES (%d,%d,%s,%d,%s,%s,%s,%s,%s,%d,%s,%d)",$form_id,$field_order, $field_type, $required, $label, $description, $placeholder, $class, $name, $access, $subtype, $multiple);
     				$wpdb->query($sql);	
 				
 				}
 
 				/* Autocomple select input */	
 				if($value === "autocomplete" && $field_name == "type") {
+					
 					$field_type = "autocomplete";
 					$required = false;
 					$label = "";
@@ -2428,19 +2481,21 @@ function bmg_generate_form() {
 								$options = serialize($value);	
 							}
 						}		 	
-					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,required,label,description,placeholder,classname,name,access,requirevalidoption,sub_values) VALUES (%d,%s,%d,%s,%s,%s,%s,%s,%d,%d,%s)",$form_id, $field_type, $required, $label, $description, $placeholder, $class, $name, $access, $requirevalidoption, $options);
+					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,field_order,type,required,label,description,placeholder,classname,name,access,requirevalidoption,sub_values) VALUES (%d,%d,%s,%d,%s,%s,%s,%s,%s,%d,%d,%s)",$form_id,$field_order, $field_type, $required, $label, $description, $placeholder, $class, $name, $access, $requirevalidoption, $options);
     				$wpdb->query($sql);	
 					
 				}
 
 				/* Header Tag Input */	
 				if($value === "header" && $field_name === "type") {
+					
 					$field_type = "header";
 					$subtype = "";
 					$label = "";
 					$class = "";
 					$access = false;
 						foreach ($form_data[$i] as $field_name => $value) {
+						
 							if($field_name == "subtype"){
 								$subtype = $value;
 							}
@@ -2454,19 +2509,21 @@ function bmg_generate_form() {
 								$access = $value;
 							}
 						}		 	
-					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,subtype,label,classname,access) VALUES (%d,%s,%s,%s,%s,%d)",$form_id, $field_type, $subtype, $label, $class, $access);
+					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,field_order,type,subtype,label,classname,access) VALUES (%d,%d,%s,%s,%s,%s,%d)",$form_id, $field_order, $field_type, $subtype, $label, $class, $access);
     				$wpdb->query($sql);	
 					
 				}
 
 				/* Paragraph Tag Input */	
 				if($value === "paragraph" && $field_name === "type") {
+					
 					$field_type = "paragraph";
 					$subtype = "";
 					$label = "";
 					$class = "";
 					$access = false;
 						foreach ($form_data[$i] as $field_name => $value) {
+						
 							if($field_name == "subtype"){
 								$subtype = $value;
 							}
@@ -2480,13 +2537,14 @@ function bmg_generate_form() {
 								$access = $value;
 							}
 						}		 	
-					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,subtype,label,classname,access) VALUES (%d,%s,%s,%s,%s,%d)",$form_id, $field_type, $subtype, $label, $class, $access);
+					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,field_order,type,subtype,label,classname,access) VALUES (%d,%d,%s,%s,%s,%s,%d)",$form_id,$field_order, $field_type, $subtype, $label, $class, $access);
     				$wpdb->query($sql);	
 					
 				}
 
 				/* Button */	
 				if($value === "button" && $field_name === "type") {
+					
 					$field_type = "button";
 					$subtype = "";
 					$label = "";
@@ -2496,6 +2554,7 @@ function bmg_generate_form() {
 					$access = false;
 					$style = "";
 						foreach ($form_data[$i] as $field_name => $value) {
+							
 							if($field_name == "subtype") {
 								$subtype = $value;
 							}
@@ -2518,7 +2577,7 @@ function bmg_generate_form() {
 								$style = $value;
 							}
 						}		 	
-					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,type,label,classname,name,access,style,value,subtype) VALUES (%d,%s,%s,%s,%s,%d,%s,%s,%s)",$form_id, $field_type, $label, $class, $name, $access, $style, $default_value, $subtype);
+					$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,field_order,type,label,classname,name,access,style,value,subtype) VALUES (%d,%d,%s,%s,%s,%s,%d,%s,%s,%s)",$form_id, $field_order, $field_type, $label, $class, $name, $access, $style, $default_value, $subtype);
     				$wpdb->query($sql);	
 					
 				}

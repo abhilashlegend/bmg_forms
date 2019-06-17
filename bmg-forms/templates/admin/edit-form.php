@@ -7,7 +7,7 @@
 	 $form = $wpdb->get_results($sql);
 
 	 $form_meta_table = $wpdb->prefix . 'bmg_forms_meta';
-	 $form_meta = $wpdb->get_results("SELECT * FROM $form_meta_table WHERE form_id=$form_id ORDER BY id ASC");
+	 $form_meta = $wpdb->get_results("SELECT * FROM $form_meta_table WHERE form_id=$form_id ORDER BY field_order ASC");
 
 	 $form_items = count($form_meta);
 
@@ -250,8 +250,51 @@
       xhttp.send("formname=" + formName + "&formdata=" + formData + "&formid=" + formId);  
       }
   }
+
+  jQuery('#bmg-forms-edit-wrap').on('click touchstart', '.delete-confirm', e => {
+  	formName = document.getElementById('bmg-form-name').value;
+      formId = document.getElementById('bmg-form-id').value;
+	 const deleteID = jQuery(event.target)
+      .parents('.form-field:eq(0)').attr('id');
+      const fId = '#id-'+deleteID;
+      const recId = jQuery('#id-'+deleteID).val();
+      const fieldName = jQuery('#name-'+deleteID).val();
+      var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+          if (this.readyState == 4 && this.status == 200) {
+             alert("Field Deleted");
+
+            console.log(this.responseText);
+   
+          } 
+         };
+      xhttp.open("POST", "admin-ajax.php?action=bmg_forms_delete_field",true);
+      xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+      xhttp.send("formname=" + formName + "&fieldid=" + recId + "&formid=" + formId + "&fieldname=" + fieldName);
+
+ 	console.log(deleteID);
+ 	console.log(recId);
+ 	  })
+ 
+
+
 })
+
+/*
+document.addEventListener('fieldRemoved', function(){
+	 const deleteID = jQuery(event.target)
+      .parents('.form-field:eq(0)').attr('id');
+ console.log(deleteID);
+ //console.log(event.currentTarget);	
+ //console.log(jQuery('.fld-id').val());
+});
+*/
+
+ 
 </script>
+<style>
+	.copy-button { display: none !important;  }
+</style>
 
 <div class="wrap">
 	<h1 class="wp-heading-inline">Edit Form</h1>
