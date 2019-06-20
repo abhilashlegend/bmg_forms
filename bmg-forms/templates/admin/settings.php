@@ -19,7 +19,7 @@
 					<tr>
 						<th scope="row"><label for="bmg_forms_admin_email">Admin Email </label></th>
 						<td>
-							<input type="email" name="bmg_forms_admin_email" value="'. $options['bmg_forms_admin_email'] .'" class="" />
+							<input type="text" name="bmg_forms_admin_email" value="'. $options['bmg_forms_admin_email'] .'" class="" />
 							<p class="description" id="bmg_forms_admin_email-description">The email used to get data when forms are filled .</p>
 						</td>
 					</tr>

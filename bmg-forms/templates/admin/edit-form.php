@@ -204,7 +204,7 @@
        		}
        },	
       formData: '<?php echo $data; ?>',
-      disabledActionButtons: ['save'],
+      disabledActionButtons: ['save','clear','data'],
       disableFields: ['autocomplete'],
       actionButtons: [{
         id: 'updateData',

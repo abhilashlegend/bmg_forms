@@ -15,7 +15,6 @@
 	 	$to = $config[0]->to_user;
 	 	$from = $config[0]->from_user;
 	 	$subject = $config[0]->subject;
-	 	$additional_headers = $config[0]->additional_headers;
 	 	$body = $config[0]->message_body;
 	 }
 	 
@@ -25,15 +24,10 @@
 		$to = trim(esc_attr($_POST['to']));
 		$from = trim(esc_attr($_POST['from']));
 		$subject = trim(esc_attr($_POST['subject']));
-		$headers = trim(esc_attr($_POST['headers']));
 		$body = trim(esc_attr($_POST['body']));
 
 		if(empty($to)) {
 			$error_message['to'] = "To field is required";
-			$aria_state['to'] = 'true';
-		}
-		if (!filter_var($to, FILTER_VALIDATE_EMAIL) && !empty($to)) {
-			$error_message['to'] = 'Please enter a valid to email address';
 			$aria_state['to'] = 'true';
 		}
 		if(empty($subject)){
@@ -54,10 +48,9 @@
 					'to_user' => $to,
 					'from_user' => $from,
 					'subject' 	=> $subject,
-					'additional_headers' => $headers,
 					'message_body'		 => $body
 				),
-				array('%d','%s','%s','%s','%s','%s') 
+				array('%d','%s','%s','%s','%s') 
 			);
 		}
 	}
@@ -69,15 +62,10 @@
 		$to = trim(esc_attr($_POST['to']));
 		$from = trim(esc_attr($_POST['from']));
 		$subject = trim(esc_attr($_POST['subject']));
-		$headers = trim(esc_attr($_POST['headers']));
 		$body = trim(esc_attr($_POST['body']));
 
 		if(empty($to)) {
 			$error_message['to'] = "To field is required";
-			$aria_state['to'] = 'true';
-		}
-		if (!filter_var($to, FILTER_VALIDATE_EMAIL) && !empty($to)) {
-			$error_message['to'] = 'Please enter a valid to email address';
 			$aria_state['to'] = 'true';
 		}
 		if(empty($subject)){
@@ -99,11 +87,10 @@
 					'to_user' => $to,
 					'from_user' => $from,
 					'subject' 	=> $subject,
-					'additional_headers' => $headers,
 					'message_body'		 => $body
 				), //data
                 array('id' => $id), //where
-                array('%d','%s','%s','%s','%s','%s'), //data format
+                array('%d','%s','%s','%s','%s'), //data format
                 array('%d') //where format
         	 );
 		}
@@ -163,10 +150,7 @@
 				<td>Subject: </td>
 				<td><input type="text" name="subject" id="subject" value="<?php echo $subject; ?>" aria-required="true" class="regular-text code" aria-invalid="' . $aria_state['subject'] . '">
 			</td>
-			<tr>
-				<td>Additional Headers: </td>
-				<td><textarea name="headers" id="headers" class="large-text code" rows="5" cols="50"><?php echo $headers; ?></textarea></td>
-			</tr>
+			
 			<tr>
 				<td>Body: </td>
 				<td><textarea name="body" class="large-text code" rows="5" cols="50" id="body"><?php echo $body; ?></textarea></td>

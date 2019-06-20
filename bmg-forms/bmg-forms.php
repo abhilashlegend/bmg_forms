@@ -574,19 +574,18 @@ function bmg_forms_shortcode($args, $content="") {
 	 				$rsubject = $config[0]->subject;
 	 				$mail_subject = str_replace(array_keys($replace_logic_arr), array_values($replace_logic_arr), $rsubject);
 	 				$headers = array('Content-Type: text/html; charset=UTF-8');
-	 				$headers .= $config[0]->additional_headers;
 	 				$rbody = $config[0]->message_body;
 	 				if($config[0]->from_user){
 	 					$body = 'From ' . $config[0]->from_user;
 	 				}
 	 				
 	 				$body .= str_replace(array_keys($replace_logic_arr), array_values($replace_logic_arr), $rbody);
-	 				$admin_mail = wp_mail( $toadmin, $mail_subject, $default_body, $headers );
+	 				$admin_mail = wp_mail( $toadmin, $mail_subject, $body, $headers );
 
 	 			} else {
 	 				$toadmin = get_option('bmg_forms_admin_email');
 					$mail_subject = $form_name . ' Submission';
-					$headers .= array('Content-Type: text/html; charset=UTF-8');
+					$headers = array('Content-Type: text/html; charset=UTF-8');
 					$admin_mail = wp_mail( $toadmin, $mail_subject, $default_body, $headers );
 	 			}
 				
@@ -899,7 +898,7 @@ function bmg_forms_update_form() {
 			$fields = count($form_data);
 			$field_order = 0;
 			for($i = 0; $i < $fields; $i++){
-				
+
 			$field_order++;
 				foreach ($form_data[$i] as $field_name => $value) {
 
@@ -916,6 +915,7 @@ function bmg_forms_update_form() {
 						$default_value = "";
 						$access = false;
 						$maxlength = NULL;
+						$id = NULL;
 
 						foreach ($form_data[$i] as $field_name => $value) {
 
@@ -959,10 +959,9 @@ function bmg_forms_update_form() {
 							if($field_name == "maxlength"){
 								$maxlength = $value;
 							}
-						}
-						if(isset($id)) {
+						}	
+						if(isset($id)) { 
 
-							
 							$update_result = $wpdb->update(
 			                $table_name1, //table
 				               array( 
@@ -992,6 +991,8 @@ function bmg_forms_update_form() {
 
 
 					    } else {
+					    		
+
 					    		$sql = $wpdb->prepare("INSERT INTO $table_name1 (form_id,field_order,type,required,label,description,placeholder,classname,name,access,maxlength,value, subtype) VALUES (%d,%d,%s,%d,%s,%s,%s,%s,%s,%d,%d,%s,%s)",$form_id, $field_order, $field_type, $required, $label, $description, $placeholder, $class, $name, $access, $maxlength, $default_value, $subtype);
     							$wpdb->query($sql);	
 
@@ -1018,6 +1019,7 @@ function bmg_forms_update_form() {
 					$access = false;
 					$maxlength = NULL;
 					$rows = NULL;
+					$id = NULL;
 						foreach ($form_data[$i] as $field_name => $value) {
 							if($field_name == "id") {
 								$id = $value;
@@ -1115,6 +1117,7 @@ function bmg_forms_update_form() {
 					$min = NULL;
 					$max = NULL;
 					$step = NULL;
+					$id = NULL;
 						foreach ($form_data[$i] as $field_name => $value) {
 							if($field_name == "id") {
 								$id = $value;
@@ -1206,6 +1209,7 @@ function bmg_forms_update_form() {
 					$access = false;
 					$multiple = false;
 					$options = [];
+					$id = NULL;
 						foreach ($form_data[$i] as $field_name => $value) {
 							if($field_name == "id") {
 								$id = $value;
@@ -1291,6 +1295,7 @@ function bmg_forms_update_form() {
 					$access = false;
 					$other = true;
 					$options = [];
+					$id = NULL;
 						foreach ($form_data[$i] as $field_name => $value) {
 							if($field_name == "id") {
 								$id = $value;
@@ -1376,6 +1381,7 @@ function bmg_forms_update_form() {
 					$access = false;
 					$other = true;
 					$options = [];
+					$id = NULL;
 						foreach ($form_data[$i] as $field_name => $value) {
 							if($field_name == "id") {
 								$id = $value;
@@ -1460,6 +1466,7 @@ function bmg_forms_update_form() {
 					$name = "";
 					$default_value = "";
 					$access = false;
+					$id = NULL;
 						foreach ($form_data[$i] as $field_name => $value) {
 							if($field_name == "id") {
 								$id = $value;
@@ -1521,6 +1528,7 @@ function bmg_forms_update_form() {
 					$name = "";
 					$access = false;
 					$default_value = "";
+					$id = NULL;
 						foreach ($form_data[$i] as $field_name => $value) {
 							if($field_name == "id") {
 								$id = $value;
@@ -1600,6 +1608,7 @@ function bmg_forms_update_form() {
 					$access = false;
 					$subtype = "";
 					$multiple = false;
+					$id = NULL;
 						foreach ($form_data[$i] as $field_name => $value) {
 							if($field_name == "id") {
 								$id = $value;
@@ -1685,6 +1694,7 @@ function bmg_forms_update_form() {
 					$access = false;
 					$requirevalidoption = false;
 					$options = [];
+					$id = NULL;
 						foreach ($form_data[$i] as $field_name => $value) {
 							if($field_name == "id") {
 								$id = $value;
@@ -1765,6 +1775,7 @@ function bmg_forms_update_form() {
 					$label = "";
 					$class = "";
 					$access = false;
+					$id = NULL;
 						foreach ($form_data[$i] as $field_name => $value) {
 							if($field_name == "id") {
 								$id = $value;
@@ -1814,6 +1825,7 @@ function bmg_forms_update_form() {
 					$label = "";
 					$class = "";
 					$access = false;
+					$id = NULL;
 						foreach ($form_data[$i] as $field_name => $value) {
 							if($field_name == "id") {
 								$id = $value;
@@ -1867,6 +1879,7 @@ function bmg_forms_update_form() {
 					$default_value = "";
 					$access = false;
 					$style = "";
+					$id = NULL;
 						foreach ($form_data[$i] as $field_name => $value) {
 							if($field_name == "id") {
 								$id = $value;
