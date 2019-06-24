@@ -148,3 +148,56 @@
 .other-wrap { display: none !important; } /* Have to see this in future for radio group */
 .toggle-wrap { display: none !important; } /* Will include toggle checkbox in the future */
 .access-wrap { display: none !important; } /* User based access will not be used */
+
+/* Tabs styling */
+.bd-example-tabs .nav-tabs {
+    margin-bottom: 1rem;
+}
+.nav-tabs {
+    border-bottom: 1px solid #dee2e6;
+}
+.nav {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+    padding-left: 0;
+    margin-bottom: 0;
+    list-style: none;
+}
+.nav-tabs .nav-item {
+    margin-bottom: -1px;
+}
+.nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active {
+    color: #495057;
+    background-color: #fff;
+    border-color: #dee2e6 #dee2e6 #fff;
+}
+.nav-tabs .nav-link {
+    border: 1px solid transparent;
+    border-top-left-radius: .25rem;
+    border-top-right-radius: .25rem;
+}
+.nav-link {
+    display: block;
+    padding: .5rem 1rem;
+    text-decoration: none;
+}
+.tab-content>.tab-pane {
+    display: none;
+}
+.tab-content>.active {
+    display: block;
+}
+
+.fade.show {
+    opacity: 1;
+}
+.fade {
+    opacity: 0;
+    transition: opacity .15s linear;
+}
+.layout-setting-table td, th { padding: 10px; }
+.layout-setting-table th { width:150px; text-align: left; }
+.bmg-grid-opt-row { display: none; }

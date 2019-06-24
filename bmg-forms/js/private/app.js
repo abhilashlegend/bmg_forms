@@ -19,7 +19,38 @@ jQuery($ => {
   let formData;
   let formName;
   function generateForm() {
-      formName = document.getElementById('bmg-form-name').value;
+     var formName = document.getElementById('bmg-form-name').value;
+     var fieldLayout = document.getElementById('form-layout').value;
+     var gridColumns;
+     var hideLabels = false;
+     var enable_captcha = false;
+      if(fieldLayout == "grid"){
+        gridColumns = document.getElementById('form-grid-option').value;
+      }
+      if(document.getElementById("hide-labels").checked == true){
+          hideLabels = true;
+      }
+      if(document.getElementById("form-captcha").checked == true){
+         enable_captcha = true;
+      }
+       var buttonAlignment = document.getElementById('button-align').value;
+       var errorDisplay;
+       if(document.getElementById("error-inline").checked){
+         errorDisplay = "inline";
+       } else {
+         errorDisplay = "error-top";
+       }
+       var layoutOptions = {
+         "fieldlayout": fieldLayout,
+         "gridcolumns": gridColumns,
+         "hidelabels": hideLabels,
+         "buttonalignment": buttonAlignment,
+         "errordisplay": errorDisplay,
+         "captcha": enable_captcha
+       }
+
+      layoutOptions = JSON.stringify(layoutOptions);
+      console.log(layoutOptions);
       formData = formBuilder.actions.getData('json', true)
       if(formName === ""){
         alert("Please enter form name");
@@ -41,12 +72,29 @@ jQuery($ => {
           };
       xhttp.open("POST", "admin-ajax.php?action=bmg_generate_form",true);
       xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-      xhttp.send("formname=" + formName + "&formdata=" + formData);  
+      xhttp.send("formname=" + formName + "&formdata=" + formData + "&layout=" + layoutOptions);  
       }
   }
 
-
-
-  
+  $("#form-layout").change(function() {
+     var str = "";
+    $( "#form-layout option:selected" ).each(function() {
+      str = $( this ).val();
+    });
+    if(str == "grid"){
+      $('.bmg-grid-opt-row').css('display','table-row');
+    } else {
+      $('.bmg-grid-opt-row').css('display','none');
+    }
+     if(str == "horizontal"){
+      $('#hide-labels').prop("checked", false);
+      $('#hide-labels').prop("disabled", true);
+    } else {
+      $('#hide-labels').prop("disabled", false);
+    }
+  });
  
 });
+
+
+ 

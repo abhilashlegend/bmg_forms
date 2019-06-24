@@ -6,6 +6,8 @@ $table_name = $wpdb->prefix . 'bmg_forms';
 
 $meta_table = $wpdb->prefix . 'bmg_forms_meta';
 
+$layout_table = $wpdb->prefix . 'bmg_forms_settings';
+
 
 $result = $wpdb->get_results("SELECT * FROM $table_name ORDER BY id");
 		$items = $wpdb->num_rows;
@@ -45,8 +47,13 @@ $result = $wpdb->get_results("SELECT * FROM $table_name ORDER BY id");
 						$tables_removed = $wpdb->query($delete_table_sql);
 						
 					}
+
 					$delete_meta_sql = "DELETE from $meta_table WHERE form_id IN ($row_ids)";
 					$delete_meta = $wpdb->query($delete_meta_sql);
+
+					$delete_layout_sql = "DELETE from $layout_table WHERE form_id IN ($row_ids)";
+					$delete_layout = $wpdb->query($delete_layout_sql);
+					
 					$delete_sql = "DELETE from $table_name WHERE id IN ($row_ids)";
 					$delete_result = $wpdb->query($delete_sql);
 					if($delete_result) {

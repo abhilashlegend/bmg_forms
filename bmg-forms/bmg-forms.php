@@ -133,6 +133,7 @@ function bmg_forms_shortcode($args, $content="") {
 	$field_id = [];
 	$success = false;
 	$form_meta_table = $wpdb->prefix . 'bmg_forms_meta';
+	$form_layout_table = $wpdb->prefix . 'bmg_forms_settings';
 	$captcha = bmg_forms_create_captcha();
 	$form_name = getformname($form_id);
 	$dir = "wp-content/uploads/bmg-forms";
@@ -141,6 +142,38 @@ function bmg_forms_shortcode($args, $content="") {
 	if(isset($form_id)) {
 		$result = $wpdb->get_results("SELECT * FROM $form_meta_table WHERE form_id=$form_id ORDER BY field_order ASC");
 
+		$form_layout = $wpdb->get_results("SELECT * FROM $form_layout_table WHERE form_id=$form_id ORDER BY id ASC");
+
+		 $field_layout = $form_layout[0]->field_layout;
+		 $grid_columns = $form_layout[0]->grid_columns;
+		 $hide_labels = (boolean)$form_layout[0]->hide_labels;
+		 $buttons_alignment = $form_layout[0]->buttons_alignment;
+		 $error_display = $form_layout[0]->error_display;
+		 $form_group = "";
+		 $label_cls = "";
+		 $field_div_st = "";
+		 $field_div_en = "";
+		 $form_class = "";
+		 $form_ctrl_class = "";
+		 $hint_class = "";
+
+		
+		 if($field_layout == "horizontal") {
+		 	$form_group = "row";
+		 	$label_cls = "col-sm-4 col-form-label";
+		 	$field_div_st = '<div class="col-sm-8">';
+		 	$field_div_en = '</div>';
+		 }
+
+		 if($field_layout == "inline") {
+		 		$form_class = "form-inline";
+		 		$form_ctrl_class = " mx-sm-3";
+		 		$field_div_st = '<div class="inline-field">';
+		 		$field_div_en = '</div>';
+		 		$hint_class = "inline-hint";
+		 }
+
+
 		$form_items = count($result);
 
 		if($form_items == 0) {
@@ -148,7 +181,7 @@ function bmg_forms_shortcode($args, $content="") {
 		}
 
 		$output .= '<div role="form">
-					<form method="post" action="" enctype="multipart/form-data"  novalidate>';
+					<form method="post" action="" class="' . $form_class . '" enctype="multipart/form-data"  novalidate>';
 
 		for($i = 0; $i < $form_items; $i++){
 
@@ -191,10 +224,12 @@ function bmg_forms_shortcode($args, $content="") {
 				} else {
 					$field_value = $result[$i]->value;
 				}
-				$output .= '<div class="form-group">';
-				$output .=	'<label for="' . $result[$i]->name . '">'. $rspan . ' ' . $result[$i]->label . '</label>';
-				$output .=	'<input type="' . $result[$i]->subtype . '" name="' . $result[$i]->name . '" id="' . $result[$i]->name . '" aria-required="' . $field_required . '" aria-invalid="" aria-describedby="' . $result[$i]->name . '-error" placeholder="' . $result[$i]->placeholder . '" value="' . $field_value . '" class="' . $result[$i]->classname . '" maxlength="' . $field_max_length . '" />';
-				$output .= '<small id="' . $result[$i]->name . '-help" class="form-text text-muted">' .  $result[$i]->description . '</small>';
+				$output .= '<div class="form-group ' . $form_group . '">';
+				$output .=	'<label class="' . $label_cls . '" for="' . $result[$i]->name . '">'. $rspan . ' ' . $result[$i]->label . '</label>';
+				$output .= $field_div_st;
+				$output .=	'<input type="' . $result[$i]->subtype . '" name="' . $result[$i]->name . '" id="' . $result[$i]->name . '" aria-required="' . $field_required . '" aria-invalid="" aria-describedby="' . $result[$i]->name . '-error" placeholder="' . $result[$i]->placeholder . '" value="' . $field_value . '" class="' . $result[$i]->classname .  $form_ctrl_class . '" maxlength="' . $field_max_length . '" />';
+				$output .= '<small id="' . $result[$i]->name . '-help" class="form-text text-muted ' . $hint_class . '">' .  $result[$i]->description . '</small>';
+				$output .= $field_div_en;
 				$output .= '</div>';
 			}
 
@@ -225,10 +260,12 @@ function bmg_forms_shortcode($args, $content="") {
 				}
 				$form_fields[] = $result[$i]->name;
 				$field_id[$result[$i]->name] = $result[$i]->id;
-				$output .= '<div class="form-group">';
-				$output .=	'<label for="' . $result[$i]->name . '">'. $rspan . ' ' . $result[$i]->label . '</label>';
+				$output .= '<div class="form-group ' . $form_group . '">';
+				$output .=	'<label class="' . $label_cls . '" for="' . $result[$i]->name . '">'. $rspan . ' ' . $result[$i]->label . '</label>';
+				$output .= $field_div_st;
 				$output .=	'<input type="number" name="' . $result[$i]->name . '" id="' . $result[$i]->name . '" aria-required="' . $field_required . '" aria-invalid="" aria-describedby="' . $result[$i]->name . '-error" placeholder="' . $result[$i]->placeholder . '" value="' . $field_value . '" class="' . $result[$i]->classname . '" maxlength="' . $field_max_length . '" min="' . $result[$i]->min . '" max="' . $result[$i]->max . '" step="' . $result[$i]->step . '" />';
 				$output .= '<small id="' . $result[$i]->name . '-help" class="form-text text-muted">' .  $result[$i]->description . '</small>';
+				$output .= $field_div_en;
 				$output .= '</div>';
 			}
 
@@ -254,17 +291,20 @@ function bmg_forms_shortcode($args, $content="") {
 				$field_id[$result[$i]->name] = $result[$i]->id;
 				if($result[$i]->subtype == "tinymce") {
 
-					$output .= '<div class="form-group">';
-					$output .=	'<label for="' . $result[$i]->name . '">'. $rspan . ' ' . $result[$i]->label . '</label>';
-
+					$output .= '<div class="form-group ' . $form_group . '" >';
+					$output .=	'<label class="' . $label_cls . '" for="' . $result[$i]->name . '">'. $rspan . ' ' . $result[$i]->label . '</label>';
+					$output .= $field_div_st;
 					$output .= '<textarea name="' . $result[$i]->name . '" cols="40" rows="' . $result[$i]->rows . '" class="tinymce-enabled ' . $result[$i]->classname . '" id="' . $result[$i]->name . '" aria-required="' . $field_required . '" aria-invalid="" aria-describedby="' . $result[$i]->name . '-error" placeholder="' . $result[$i]->placeholder . '">' . $field_value . '</textarea>';
 					$output .= '<small id="' . $result[$i]->name . '-help" class="form-text text-muted">' .  $result[$i]->description . '</small>';
+					$output .= $field_div_en;
 					$output .= '</div>';
 				} else { 
-					$output .= '<div class="form-group">';
-					$output .=	'<label for="' . $result[$i]->name . '">'. $rspan . ' ' . $result[$i]->label . '</label>';
+					$output .= '<div class="form-group ' . $form_group . '">';
+					$output .=	'<label class="' . $label_cls . '" for="' . $result[$i]->name . '">'. $rspan . ' ' . $result[$i]->label . '</label>';
+					$output .= $field_div_st;
 					$output .= '<textarea name="' . $result[$i]->name . '" cols="40" rows="' . $result[$i]->rows . '" class="' . $result[$i]->classname . '" id="' . $result[$i]->name . '" aria-required="' . $field_required . '" aria-invalid="" aria-describedby="' . $result[$i]->name . '-error" placeholder="' . $result[$i]->placeholder . '">' . $field_value . '</textarea>';
 					$output .= '<small id="' . $result[$i]->name . '-help" class="form-text text-muted">' .  $result[$i]->description . '</small>';
+					$output .= $field_div_en;
 					$output .= '</div>';
 
 				}
@@ -289,8 +329,9 @@ function bmg_forms_shortcode($args, $content="") {
 				$option_values = unserialize($result[$i]->sub_values);
 				$option_items = count($option_values);
 				$field_id[$result[$i]->name] = $result[$i]->id;
-				$output .= '<div class="form-group">';
-				$output .=	'<label for="' . $result[$i]->name . '">'. $rspan . ' ' . $result[$i]->label . '</label>';
+				$output .= '<div class="form-group ' . $form_group . '">';
+				$output .=	'<label class="' . $label_cls . '" for="' . $result[$i]->name . '">'. $rspan . ' ' . $result[$i]->label . '</label>';
+				$output .= $field_div_st;
 				$output .= '<select name="' . $result[$i]->name . '" id="' . $result[$i]->name . '" aria-required="' . $field_required . '" aria-invalid="false" class="' . $result[$i]->classname . '">';
 					for($j = 0; $j < $option_items; $j++) {
 						if(isset($_POST[$result[$i]->name]) && $_POST[$result[$i]->name] == $option_values[$j]->value){
@@ -306,6 +347,7 @@ function bmg_forms_shortcode($args, $content="") {
 					}
 				$output .= '</select>';
 				$output .= '<small id="' . $result[$i]->name . '-help" class="form-text text-muted">' .  $result[$i]->description . '</small>';
+				$output .= $field_div_en;
 				$output .= '</div>';	
 			}	
 
@@ -332,8 +374,9 @@ function bmg_forms_shortcode($args, $content="") {
 				$field_id[$result[$i]->name] = $result[$i]->id;
 				$option_values = unserialize($result[$i]->sub_values);
 				$option_items = count($option_values);
-				$output .= '<div class="form-group">';
-				$output .=	'<label for="' . $result[$i]->name . '">'. $rspan . ' ' . $result[$i]->label . '</label>';
+				$output .= '<div class="form-group ' . $form_group . '">';
+				$output .=	'<label class="' . $label_cls . '" for="' . $result[$i]->name . '">'. $rspan . ' ' . $result[$i]->label . '</label>';
+				$output .= $field_div_st;
 				$output .= '<small id="' . $result[$i]->name . '-help" class="form-text text-muted">' .  $result[$i]->description . '</small>';
 				for($j = 0; $j < $option_items; $j++) {
 						if($option_values[$j]->selected == 1 && empty($_POST[$result[$i]->name])){
@@ -341,6 +384,7 @@ function bmg_forms_shortcode($args, $content="") {
 						} else {
 							$option_selected =  ''; 
 						}
+						
 						$output .= '<div class="form-check ' . $form_inline . '">';
 						$output .= '<input class="form-check-input ' . $result[$i]->classname . '" type="radio" name="' . $result[$i]->name . '" id="' . $result[$i]->name . $j . '" value="' . $option_values[$j]->value . '" ' . $option_selected;
 
@@ -354,9 +398,10 @@ function bmg_forms_shortcode($args, $content="") {
   						$output .= '<label class="form-check-label" for="' . $result[$i]->name . $j . '">';
     					$output .= $option_values[$j]->label;
   						$output .= '</label>';
+  						
   						$output .= '</div>';	
 				}
-				
+				$output .= $field_div_en;
 				$output .= '</div>';	
 			}	
 
@@ -383,8 +428,9 @@ function bmg_forms_shortcode($args, $content="") {
 				$field_id[$result[$i]->name] = $result[$i]->id;
 				$option_values = unserialize($result[$i]->sub_values);
 				$option_items = count($option_values);
-				$output .= '<div class="form-group">';
-				$output .=	'<label for="' . $result[$i]->name . '">'. $rspan . ' ' . $result[$i]->label . '</label>';
+				$output .= '<div class="form-group ' . $form_group . '">';
+				$output .=	'<label class="' . $label_cls . '" for="' . $result[$i]->name . '">'. $rspan . ' ' . $result[$i]->label . '</label>';
+				$output .= $field_div_st;
 				$output .= '<small id="' . $result[$i]->name . '-help" class="form-text text-muted">' .  $result[$i]->description . '</small>';
 				
 				for($j = 0; $j < $option_items; $j++) {
@@ -410,7 +456,7 @@ function bmg_forms_shortcode($args, $content="") {
   						$output .= '</label>';
   						$output .= '</div>';			
 				}
-				
+				$output .= $field_div_en;
 				$output .= '</div>';	
 			}	
 
@@ -433,11 +479,12 @@ function bmg_forms_shortcode($args, $content="") {
 				}
 				$form_fields[] = $result[$i]->name;
 				$field_id[$result[$i]->name] = $result[$i]->id;
-				$output .= '<div class="form-group">';
-				$output .=	'<label for="' . $result[$i]->name . '">'. $rspan . ' ' . $result[$i]->label . '</label>';
+				$output .= '<div class="form-group ' . $form_group . '">';
+				$output .=	'<label class="' . $label_cls . '" for="' . $result[$i]->name . '">'. $rspan . ' ' . $result[$i]->label . '</label>';
+				$output .= $field_div_st;
 				$output .=	'<input type="date" name="' . $result[$i]->name . '" id="' . $result[$i]->name . '" aria-required="' . $field_required . '" aria-invalid="" aria-describedby="' . $result[$i]->name . '-error" placeholder="' . $result[$i]->placeholder . '" value="' . $field_value . '" class="' . $result[$i]->classname . '" maxlength="' . $field_max_length . '" />';
 				$output .= '<small id="' . $result[$i]->name . '-help" class="form-text text-muted">' .  $result[$i]->description . '</small>';	
-
+				$output .= $field_div_en;
 				$output .= '</div>';
 			}
 
@@ -474,10 +521,12 @@ function bmg_forms_shortcode($args, $content="") {
 				}
 				$form_fields[] = $result[$i]->name;
 				$field_id[$result[$i]->name] = $result[$i]->id;
-				$output .= '<div class="form-group">';
-				$output .=	'<label for="' . $result[$i]->name . '">'. $rspan . ' ' . $result[$i]->label . '</label>';
-				$output .= '<input placeholder="' . $result[$i]->placeholder . '" class="" name="' . $result[$i]->name . $field_arr . '" ' . $field_multiple . ' type="file" id="' . $result[$i]->name . '" title="' . $result[$i]->description . '">';
+				$output .= '<div class="form-group ' . $form_group . '">';
+				$output .=	'<label class="' . $label_cls . '" for="' . $result[$i]->name . '">'. $rspan . ' ' . $result[$i]->label . '</label>';
+				$output .= $field_div_st;
+				$output .= '<input placeholder="' . $result[$i]->placeholder . '" class="form-control-file" name="' . $result[$i]->name . $field_arr . '" ' . $field_multiple . ' type="file" id="' . $result[$i]->name . '" title="' . $result[$i]->description . '">';
 				$output .= '<small id="' . $result[$i]->name . '-help" class="form-text text-muted">' .  $result[$i]->description . '</small>';	
+				$output .= $field_div_en;
 				$output .= '</div>';	
 			}
 
@@ -493,12 +542,14 @@ function bmg_forms_shortcode($args, $content="") {
 			// Button
 			if($result[$i]->type == "button") {
 				if($result[$i]->subtype == "submit"){
-					$output .= '<div class="form-group">';
-					$output .= '<label for="bmg_security"><span aria-label="required">*</span> Security Code</label><div class="clearfix"></div>';
-					$output .= '<input type="text" class="form-control bmg-captcha-field" id="bmg_security" name="bmg_security" placeholder="Enter code" required aria-required="true" aria-describedby="bmg_security-error" />';
+					$output .= '<div class="form-group ' . $form_group . '">';
+					$output .= '<label class="' . $label_cls . '" for="bmg_security"><span aria-label="required">*</span> Security Code</label><div class="clearfix"></div>';
+					$output .= $field_div_st;
+					$output .= '<input type="text" class="form-control bmg-captcha-field ' . $form_ctrl_class . '" id="bmg_security" name="bmg_security" placeholder="Enter code" required aria-required="true" aria-describedby="bmg_security-error" />';
 					
 					$output .= $captcha['image'];
 					$output .= '<div class="clearfix"></div>';
+					$output .= $field_div_en;
 					$output .= '</div>';	
 					$output .= '<input type="hidden" name="bmg_code" id="bmg_code" value="';
 				$output .= $captcha['word']; 
@@ -510,8 +561,13 @@ function bmg_forms_shortcode($args, $content="") {
 				if(!empty(trim(esc_attr($_POST['bmg_security']))) && $_POST['bmg_security'] != $_POST['bmg_code']) {
 					$error_message['bmg_security'] = "Security code does not match";
 				}	
-				$output .= '<div class="form-group">';
+				$output .= '<div class="form-group ' . $form_group . '">';
+				if($field_layout == "horizontal") {
+					$output .= '<label class="' . $label_cls . '"></label>';
+				}
+				$output .= $field_div_st;
 				$output .= '<input type="' . $result[$i]->subtype . '" name="' . $result[$i]->name . '" value="' . $result[$i]->label . '" class="' . $result[$i]->classname . '">';	
+				$output .= $field_div_en;
 				$output .= '</div>';	
 			}
 
@@ -718,11 +774,13 @@ function bmg_forms_shortcode($args, $content="") {
 		wp_register_style('bmg-forms-admin-css', plugins_url('css/private/bmg-forms.css', __FILE__));
 		wp_register_script('bmg-jquery-ui-private', plugins_url('js/private/jquery-ui.min.js', __FILE__), array('jquery'));
 		wp_register_script('bmg-forms-form-builder-private', plugins_url('js/private/form-builder.min.js', __FILE__), array('jquery'));
+		wp_register_script('bmg-forms-bootstrap-js-private', plugins_url('js/private/bootstrap.min.js', __FILE__), array('jquery'));
 		wp_register_script('bmg-forms-app-private', plugins_url('js/private/app.js', __FILE__), array('bmg-forms-form-builder-private'), false, true);
 
 		wp_enqueue_style('bmg-forms-admin-css');
 		wp_enqueue_script('bmg-jquery-ui-private');
 		wp_enqueue_script('bmg-forms-form-builder-private');
+		wp_enqueue_script('bmg-forms-bootstrap-js-private');
 		wp_enqueue_script('bmg-forms-app-private');
 	}
 
@@ -737,7 +795,8 @@ function bmg_forms_plugin_create_db() {
 	$charset_collate = $wpdb->get_charset_collate();
 	$table_name = $wpdb->prefix . 'bmg_forms';
 	$table_name1 = $wpdb->prefix . 'bmg_forms_meta';
-	$table_name2 = $wpdb->prefix . 'bmg_forms_mails';	
+	$table_name2 = $wpdb->prefix . 'bmg_forms_mails';
+	$table_name3 = $wpdb->prefix . 'bmg_forms_settings';	
 
 	require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 
@@ -790,6 +849,20 @@ function bmg_forms_plugin_create_db() {
 		PRIMARY KEY  (id),
 		FOREIGN KEY  (form_id) REFERENCES  $table_name(id)
 		ON DELETE CASCADE
+	) $charset_collate;";
+	$wpdb->query($sql);
+
+	$sql = "CREATE TABLE IF NOT EXISTS $table_name3 (
+		id mediumint(9) NOT NULL AUTO_INCREMENT,
+		form_id mediumint(9) NOT NULL,
+		field_layout varchar(15),
+		grid_columns smallint,
+		hide_labels boolean DEFAULT 0,
+		buttons_alignment varchar(10),
+		error_display varchar(10),
+		captcha boolean DEFAULT 0,
+		PRIMARY KEY  (id),
+		FOREIGN KEY  (form_id) REFERENCES  $table_name(id)
 	) $charset_collate;";
 	$wpdb->query($sql);
 
@@ -851,6 +924,7 @@ function bmg_forms_remove_plugin_tables() {
 				$table_name = $wpdb->prefix . 'bmg_forms';
 				$table_name1 = $wpdb->prefix . 'bmg_forms_meta';
 				$table_name2 = $wpdb->prefix . 'bmg_forms_mails';
+				$table_name3 = $wpdb->prefix . 'bmg_forms_settings';	
 
 
 				$result = $wpdb->get_results("SELECT * FROM $table_name ORDER BY id");
@@ -871,7 +945,7 @@ function bmg_forms_remove_plugin_tables() {
 				$sql = "SET FOREIGN_KEY_CHECKS=0;";
 				$wpdb->query($sql);
 			
-				$sql = "DROP TABLE IF EXISTS  $table_name, $table_name1, $table_name2;";
+				$sql = "DROP TABLE IF EXISTS  $table_name, $table_name1, $table_name2, $table_name3;";
 				$tables_removed = $wpdb->query($sql);
 		}
 		catch (Exception $e) {
@@ -890,10 +964,29 @@ function bmg_forms_update_form() {
 	$form_name = $_POST['formname'];
 	$form_id = $_POST['formid'];
 	$form_data = json_decode(stripcslashes($_POST['formdata']));
+	$layout_data = json_decode(stripcslashes($_POST['layout']));
+	
 
-	if(isset($form_name) && isset($form_data) && isset($form_id)) {
+	if(isset($form_name) && isset($form_data) && isset($form_id) && isset($layout_data)) {
 
 			$form_table =  $wpdb->prefix . 'bmg_forms_' . $form_name . $form_id;
+
+			$layout_table = $wpdb->prefix . 'bmg_forms_settings';
+
+			$update_layout = $wpdb->update(
+			                $layout_table, //table
+				               array( 
+									'field_layout' => $layout_data->fieldlayout,
+									'grid_columns' => $layout_data->gridcolumns,
+									'hide_labels' => $layout_data->hidelabels,
+									'buttons_alignment' => $layout_data->buttonalignment,
+									'error_display' => $layout_data->errordisplay,
+									'captcha' => $layout_data->captcha
+								), //data
+				                array('form_id' => $form_id), //where
+				                array('%s','%d','%d','%s','%s','%d'), //data format
+				                array('%d') //where format
+				        	 );
 
 			$fields = count($form_data);
 			$field_order = 0;
@@ -1971,15 +2064,18 @@ function bmg_generate_form() {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'bmg_forms';
 	$table_name1 = $wpdb->prefix . 'bmg_forms_meta';
+	$table_name2 = $wpdb->prefix . 'bmg_forms_settings';
 	$form_name = $_POST['formname'];
 	$form_data = json_decode(stripcslashes($_POST['formdata']));
-	$col = [];
-	$val = [];
-	if(isset($form_name) && isset($form_data)) {
+	$layout_data = json_decode(stripcslashes($_POST['layout']));
+
+	
+
+	if(isset($form_name) && isset($form_data) && isset($layout_data)) {
 		$wpdb->insert( 
 			$table_name, 
 			array( 
-				'form_name' => $form_name, 
+				'form_name' => $form_name
 			),
 			array('%s') 
 		);
@@ -1987,6 +2083,20 @@ function bmg_generate_form() {
 
 		$form_table =  $wpdb->prefix . 'bmg_forms_' . $form_name . $form_id;
 		$table_fields = [];
+
+		$wpdb->insert( 
+			$table_name2, 
+			array( 
+				'form_id' => $form_id,
+				'field_layout' => $layout_data->fieldlayout,
+				'grid_columns' => $layout_data->gridcolumns,
+				'hide_labels' => $layout_data->hidelabels,
+				'buttons_alignment' => $layout_data->buttonalignment,
+				'error_display' => $layout_data->errordisplay,
+				'captcha' => $layout_data->captcha
+			),
+			array('%d','%s','%d','%d','%s','%s','%d') 
+		);
 
 		$fields = count($form_data);
 		$field_order = 0;
